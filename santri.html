@@ -116,8 +116,23 @@
           <p class="text-xs text-slate-500" id="totalSantriInfo">Memuat data...</p>
         </div>
 
-        <div class="w-full md:w-auto flex gap-2">
-          <input type="text" id="searchKeyword" placeholder="Cari nama atau kelas..." class="text-xs p-2 border border-slate-300 rounded-lg w-full md:w-56 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        <!-- Filter, Sort, & Search Bar -->
+        <div class="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+          <!-- Filter Kelas -->
+          <select id="filterKelas" onchange="prosesTampilanData()" class="text-xs p-2 border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="">-- Semua Kelas --</option>
+          </select>
+
+          <!-- Urutkan / Sort -->
+          <select id="sortOption" onchange="prosesTampilanData()" class="text-xs p-2 border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="nama_asc">Nama (A - Z)</option>
+            <option value="nama_desc">Nama (Z - A)</option>
+            <option value="kelas_asc">Kelas (A - Z)</option>
+            <option value="kelas_desc">Kelas (Z - A)</option>
+          </select>
+
+          <!-- Search Input -->
+          <input type="text" id="searchKeyword" oninput="prosesTampilanData()" placeholder="Cari nama atau kelas..." class="text-xs p-2 border border-slate-300 rounded-lg w-full sm:w-48 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
         </div>
       </div>
 
@@ -194,10 +209,62 @@
 
         if (error) throw error;
         listSantri = data;
-        renderTabel(listSantri);
+        populateFilterKelas();
+        prosesTampilanData();
       } catch (err) {
         alert("Gagal memuat data: " + err.message);
       }
+    }
+
+    // Isi opsi dropdown filter kelas
+    function populateFilterKelas() {
+      const select = document.getElementById('filterKelas');
+      const selectedValue = select.value;
+      const daftarKelas = [...new Set(listSantri.map(s => s.kelas))].filter(Boolean).sort();
+      
+      select.innerHTML = '<option value="">-- Semua Kelas --</option>';
+      daftarKelas.forEach(kelas => {
+        select.innerHTML += `<option value="${kelas}">${kelas}</option>`;
+      });
+
+      if (daftarKelas.includes(selectedValue)) {
+        select.value = selectedValue;
+      }
+    }
+
+    // Pemrosesan Filter, Search, dan Sort
+    function prosesTampilanData() {
+      const kelasFilter = document.getElementById('filterKelas').value;
+      const sortOption = document.getElementById('sortOption').value;
+      const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+
+      // 1. Filter data
+      let hasil = listSantri.filter(s => {
+        const matchKelas = !kelasFilter || s.kelas === kelasFilter;
+        const matchKeyword = !keyword || 
+          (s.nama_santri && s.nama_santri.toLowerCase().includes(keyword)) ||
+          (s.kelas && s.kelas.toLowerCase().includes(keyword)) ||
+          (s.no_hp_ortu && s.no_hp_ortu.includes(keyword));
+
+        return matchKelas && matchKeyword;
+      });
+
+      // 2. Sorting data
+      hasil.sort((a, b) => {
+        if (sortOption === 'nama_asc') {
+          return (a.nama_santri || '').localeCompare(b.nama_santri || '');
+        } else if (sortOption === 'nama_desc') {
+          return (b.nama_santri || '').localeCompare(a.nama_santri || '');
+        } else if (sortOption === 'kelas_asc') {
+          return (a.kelas || '').localeCompare(b.kelas || '') || (a.nama_santri || '').localeCompare(b.nama_santri || '');
+        } else if (sortOption === 'kelas_desc') {
+          return (b.kelas || '').localeCompare(a.kelas || '') || (a.nama_santri || '').localeCompare(b.nama_santri || '');
+        }
+        return 0;
+      });
+
+      // 3. Render ke tabel
+      renderTabel(hasil);
     }
 
     function renderTabel(data) {
@@ -205,10 +272,10 @@
       const totalInfo = document.getElementById('totalSantriInfo');
       tbody.innerHTML = '';
 
-      totalInfo.innerText = `Total: ${data.length} Santri`;
+      totalInfo.innerText = `Menampilkan: ${data.length} dari ${listSantri.length} Santri`;
 
       if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data santri.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada data santri yang cocok.</td></tr>`;
         return;
       }
 
@@ -247,7 +314,7 @@
         const { error } = await db.from('santri').insert([{ 
           nama_santri: nama, 
           kelas: kelas, 
-          no_hp_ortu: noHp,
+          no_hp_ortu: noHp, 
           foto_url: fotoUrl || null
         }]);
         if (error) throw error;
@@ -375,16 +442,6 @@
         alert("Gagal menghapus santri: " + err.message);
       }
     }
-
-    // FILTER / PENCARIAN INSTAN
-    document.getElementById('searchKeyword').addEventListener('input', (e) => {
-      const keyword = e.target.value.toLowerCase();
-      const filtered = listSantri.filter(s => 
-        s.nama_santri.toLowerCase().includes(keyword) || 
-        s.kelas.toLowerCase().includes(keyword)
-      );
-      renderTabel(filtered);
-    });
 
     // HELPER FORMAT NO HP
     function formatNoHp(no) {
