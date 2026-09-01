@@ -4,16 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rumah Qur'an Baitul Itqan - Rekap Kartu Prestasi</title>
-    <script>
+  
+  <script>
     const PIN_RAHASIA = "laatahzan"; // 🔑 PIN Akses Pengurus
 
     function cekAksesPengurus() {
-      // Cek apakah browser sudah menyimpan status login
       const isAuth = localStorage.getItem('rqbi_authenticated');
-
       if (isAuth !== 'true') {
         const inputPin = prompt("🔒 Halaman Terbatas!\nMasukkan PIN Pengurus / Ustadzah Rumah Qur'an Baitul Itqan:");
-        
         if (inputPin === PIN_RAHASIA) {
           localStorage.setItem('rqbi_authenticated', 'true');
           alert("✅ PIN Benar! Akses diberikan.");
@@ -31,66 +29,154 @@
       }
     }
 
-    // ⚠️ WAJIB DIPANGGIL AGAR PERINTAH PIN LANGSUNG DIJALANKAN
     cekAksesPengurus();
   </script>
+
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk8fg3wgm/image/upload/v1786163785/fav_ugojic.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 pb-10">
+<body class="bg-slate-50 font-sans text-slate-800 pb-16">
 
-  <div class="bg-emerald-600 text-white p-3 sticky top-0 shadow-md z-10 flex justify-between items-center">
+  <!-- Top Navbar -->
+  <div class="bg-emerald-600 text-white p-3 sticky top-0 shadow-md z-10 flex justify-between items-center px-4 md:px-8">
     <div class="flex items-center gap-2.5">
       <img src="https://res.cloudinary.com/dk8fg3wgm/image/upload/v1786163785/fav_ugojic.png" alt="Logo RQ Baitul Itqan" class="w-8 h-8 rounded-full bg-white p-0.5 shadow-sm">
       <div>
         <h1 class="text-sm sm:text-base font-bold leading-tight">Rumah Qur'an Baitul Itqan</h1>
-        <p class="text-[10px] text-emerald-100 font-medium">📜 Rekap Kartu Prestasi Santri</p>
+        <p class="text-[10px] text-emerald-100 font-medium">📜 Rekapitulasi Prestasi Santri</p>
       </div>
     </div>
-    <a href="index.html" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-500 font-medium">
-      ← Utama
-    </a>
+    <div class="flex items-center gap-2">
+      <button onclick="logoutPengurus()" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1.5 rounded-lg border border-emerald-500 font-medium transition-all">
+        🔒 Kunci
+      </button>
+      <a href="index.html" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-500 font-medium transition-all">
+        ← Utama
+      </a>
+    </div>
   </div>
 
   <div class="max-w-6xl mx-auto p-4 space-y-4">
 
-    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-      
-      <a href="index.html" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all text-white font-medium px-4 py-2.5 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow">
-        <span>➕</span> Tambah Catatan Prestasi
-      </a>
+    <!-- KPI Summary Metrics -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Total Setoran</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="kpiTotal" class="text-xl font-bold text-slate-800">0</span>
+          <span class="text-xs font-semibold text-emerald-600">Catatan</span>
+        </div>
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Bulan Ini</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="kpiBulanIni" class="text-xl font-bold text-sky-700">0</span>
+          <span class="text-xs font-semibold text-sky-600">Catatan</span>
+        </div>
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Disimak Ortu</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="kpiVerified" class="text-xl font-bold text-emerald-700">0</span>
+          <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Selesai</span>
+        </div>
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Pending Ortu</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="kpiPending" class="text-xl font-bold text-amber-700">0</span>
+          <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Menunggu</span>
+        </div>
+      </div>
+    </div>
 
-      <div class="flex flex-col sm:flex-row gap-2">
-        <select id="filterSantri" onchange="filterData()" class="text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
-          <option value="">-- Semua Santri --</option>
-        </select>
-        <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Cari surat, jilid, atau ustadzah..." class="text-xs p-2.5 border border-slate-300 rounded-lg w-full sm:w-56 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+    <!-- Filter Bar Card -->
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100 space-y-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">🔍 Filter & Pencarian Data</span>
+        </div>
+        <a href="index.html" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-sm transition-all">
+          <span>➕</span> Input Setoran Baru
+        </a>
       </div>
 
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Kelas</label>
+          <select id="filterKelas" onchange="onFilterKelasChange()" class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+            <option value="">-- Semua Kelas --</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Santri</label>
+          <select id="filterSantri" onchange="filterData()" class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+            <option value="">-- Semua Santri --</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Status Ortu</label>
+          <select id="filterStatusOrtu" onchange="filterData()" class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+            <option value="">-- Semua Status --</option>
+            <option value="verified">Sudah Disimak Ortu</option>
+            <option value="pending">Belum / Pending</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Periode</label>
+          <select id="filterPeriode" onchange="filterData()" class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+            <option value="semua">Semua Riwayat</option>
+            <option value="bulan_ini">Bulan Ini</option>
+            <option value="hari_ini">Hari Ini</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Kata Kunci</label>
+          <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Cari surat, jilid, guru..." class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+        </div>
+      </div>
     </div>
 
+    <!-- Data Table Header & Counter -->
     <div class="flex justify-between items-center px-1">
-      <h2 class="text-xs font-bold text-slate-600 uppercase tracking-wider">Daftar Catatan Setoran</h2>
-      <span id="totalRecords" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full">0 Data</span>
+      <div class="flex items-center gap-2">
+        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Hasil Rekapitulasi</h2>
+        <span id="totalRecords" class="text-[11px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">0 Data</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-xs text-slate-500">
+        <span>Tampilkan</span>
+        <select id="itemsPerPage" onchange="changePageSize()" class="border border-slate-300 rounded p-1 bg-white text-xs outline-none">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+        <span>per baris</span>
+      </div>
     </div>
 
+    <!-- Mobile Card View -->
     <div id="mobileCardContainer" class="block md:hidden space-y-3">
       <div class="p-6 text-center text-slate-400 bg-white rounded-xl border border-slate-100 text-xs">
         Sedang mengambil data...
       </div>
     </div>
 
+    <!-- Desktop Table View -->
     <div class="hidden md:block bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead class="bg-slate-100 border-b font-semibold text-slate-700">
             <tr>
               <th class="p-3">Tanggal / TM</th>
-              <th class="p-3">Santri</th>
+              <th class="p-3">Santri & Kelas</th>
               <th class="p-3">Setoran Hafalan</th>
-              <th class="p-3">Setoran Ummi</th>
-              <th class="p-3">Disimak Oleh</th>
+              <th class="p-3">Metode Ummi</th>
+              <th class="p-3">Status Verifikasi</th>
               <th class="p-3 text-center">Aksi</th>
             </tr>
           </thead>
@@ -103,12 +189,27 @@
       </div>
     </div>
 
+    <!-- Pagination Controls -->
+    <div id="paginationContainer" class="bg-white rounded-xl shadow-sm p-3 border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs">
+      <span id="pageInfo" class="text-slate-500 font-medium">Menampilkan 0 - 0 dari 0 data</span>
+      <div class="flex items-center gap-1">
+        <button id="btnPrevPage" onclick="prevPage()" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium">
+          ← Sebelumnya
+        </button>
+        <div id="paginationNumbers" class="flex gap-1"></div>
+        <button id="btnNextPage" onclick="nextPage()" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium">
+          Berikutnya →
+        </button>
+      </div>
+    </div>
+
   </div>
 
+  <!-- Modal Form Edit (Nilai Hafalan Input Manual) -->
   <div id="modalForm" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50 overflow-y-auto">
-    <div class="bg-white rounded-xl shadow-lg p-5 max-w-lg w-full space-y-4 my-8">
+    <div class="bg-white rounded-2xl shadow-xl p-5 max-w-lg w-full space-y-4 my-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 id="modalTitle" class="text-sm font-bold text-slate-800">✏️ Edit Catatan Prestasi</h3>
+        <h3 id="modalTitle" class="text-sm font-bold text-slate-800">✏️ Koreksi Catatan Prestasi Santri</h3>
         <button onclick="tutupModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
       </div>
 
@@ -118,69 +219,140 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block font-medium text-slate-600 mb-1">Pilih Santri *</label>
-            <select id="formSantri" required class="w-full p-2 border border-slate-300 rounded-lg">
+            <select id="formSantri" required class="w-full p-2 border border-slate-300 rounded-lg outline-none bg-white">
               <option value="">-- Pilih Santri --</option>
             </select>
           </div>
           <div>
             <label class="block font-medium text-slate-600 mb-1">Tatap Muka Ke- (TM)</label>
-            <input type="number" id="formTm" placeholder="Contoh: 5" class="w-full p-2 border border-slate-300 rounded-lg">
+            <input type="number" id="formTm" placeholder="Contoh: 12" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
           </div>
         </div>
 
         <div>
           <label class="block font-medium text-slate-600 mb-1">Tanggal *</label>
-          <input type="date" id="formTanggal" required class="w-full p-2 border border-slate-300 rounded-lg">
+          <input type="date" id="formTanggal" required class="w-full p-2 border border-slate-300 rounded-lg outline-none">
         </div>
 
-        <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100 space-y-2">
-          <p class="font-bold text-emerald-800">📖 Setoran Hafalan</p>
+        <!-- Bagian Hafalan (Nilai Diubah Menjadi Input Manual) -->
+        <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 space-y-2">
+          <p class="font-bold text-emerald-800">🌿 Setoran Hafalan Qur'an</p>
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block text-slate-600 mb-1">Surat</label>
-              <input type="text" id="formSurat" placeholder="An-Naba" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+              <label class="block text-slate-600 mb-1 text-[10px]">Surat</label>
+              <select id="formSurat" class="w-full p-2 border border-slate-300 rounded-lg bg-white text-xs"></select>
             </div>
             <div>
-              <label class="block text-slate-600 mb-1">Ayat</label>
+              <label class="block text-slate-600 mb-1 text-[10px]">Ayat</label>
               <input type="text" id="formAyat" placeholder="1-15" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
             </div>
             <div>
-              <label class="block text-slate-600 mb-1">Nilai</label>
-              <input type="text" id="formNilaiHafalan" placeholder="A / 90" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+              <label class="block text-slate-600 mb-1 text-[10px]">Nilai Hafalan</label>
+              <input type="text" id="formNilaiHafalan" placeholder="Contoh: 90 / A" class="w-full p-2 border border-slate-300 rounded-lg bg-white font-medium outline-none focus:ring-2 focus:ring-emerald-500">[cite: 1]
             </div>
           </div>
         </div>
 
-        <div class="p-3 bg-blue-50 rounded-lg border border-blue-100 space-y-2">
+        <!-- Bagian Ummi -->
+        <div class="p-3 bg-blue-50/60 rounded-xl border border-blue-100 space-y-2">
           <p class="font-bold text-blue-800">📘 Metode Ummi</p>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block text-slate-600 mb-1">Jilid</label>
-              <input type="text" id="formJilid" placeholder="Jilid 3" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+              <label class="block text-slate-600 mb-1 text-[10px]">Jilid</label>
+              <select id="formJilid" class="w-full p-2 border border-slate-300 rounded-lg bg-white text-xs">
+                <option value="">-- Jilid --</option>
+                <option value="PRA TK">PRA TK</option>
+                <option value="Jilid 1">Jilid 1</option><option value="Jilid 2">Jilid 2</option>
+                <option value="Jilid 3">Jilid 3</option><option value="Jilid 4">Jilid 4</option>
+                <option value="Jilid 5">Jilid 5</option><option value="Jilid 6">Jilid 6</option>
+                <option value="Ghorib">Ghorib</option><option value="Tajwid">Tajwid</option>
+                <option value="Al Qur'an">Al Qur'an</option>
+              </select>
             </div>
             <div>
-              <label class="block text-slate-600 mb-1">Halaman</label>
+              <label class="block text-slate-600 mb-1 text-[10px]">Halaman</label>
               <input type="text" id="formHalaman" placeholder="12" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
             </div>
             <div>
-              <label class="block text-slate-600 mb-1">Materi</label>
-              <input type="text" id="formMateri" placeholder="Mad Thabi'i" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+              <label class="block text-slate-600 mb-1 text-[10px]">Nilai Ummi</label>
+              <select id="formNilaiUmmi" class="w-full p-2 border border-slate-300 rounded-lg bg-white font-bold">
+                <option value="">-- Nilai --</option>
+                <option value="A+">A+</option><option value="A">A</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+                <option value="C+">C+</option>
+              </select>
             </div>
-            <div>
-              <label class="block text-slate-600 mb-1">Nilai</label>
-              <input type="text" id="formNilaiUmmi" placeholder="B / 80" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+          </div>
+
+          <div>
+            <label class="block text-slate-600 mb-1 text-[10px]">Materi / Pokok & Virtual Keypad</label>
+            <input type="text" id="formMateri" placeholder="Ketik materi atau klik tombol di bawah" class="w-full p-2 border border-slate-300 rounded-lg bg-white mb-2">
+            
+            <div class="bg-slate-100 p-2.5 rounded-lg border border-slate-200 space-y-2">
+              <div>
+                <span class="text-[10px] text-slate-500 font-bold block mb-1">HARAKAT:</span>
+                <div class="flex flex-wrap gap-1">
+                  <button type="button" onclick="insertHijaiyahModal(' َ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">َ (Fathah)</button>
+                  <button type="button" onclick="insertHijaiyahModal(' ِ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ِ (Kasrah)</button>
+                  <button type="button" onclick="insertHijaiyahModal(' ُ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ُ (Dhammah)</button>
+                  <button type="button" onclick="insertHijaiyahModal(' ً')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ً (Tanwin)</button>
+                  <button type="button" onclick="insertHijaiyahModal(' ْ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ْ (Sukun)</button>
+                  <button type="button" onclick="insertHijaiyahModal(' ّ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ّ (Tasydid)</button>
+                </div>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-500 font-bold block mb-1">HURUF HIJAIYAH (30):</span>
+                <div class="flex flex-wrap gap-1 justify-start" style="direction: rtl;">
+                  <button type="button" onclick="insertHijaiyahModal('ا')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ا</button>
+                  <button type="button" onclick="insertHijaiyahModal('ب')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ب</button>
+                  <button type="button" onclick="insertHijaiyahModal('ت')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ت</button>
+                  <button type="button" onclick="insertHijaiyahModal('ث')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ث</button>
+                  <button type="button" onclick="insertHijaiyahModal('ج')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ج</button>
+                  <button type="button" onclick="insertHijaiyahModal('ح')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ح</button>
+                  <button type="button" onclick="insertHijaiyahModal('خ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">خ</button>
+                  <button type="button" onclick="insertHijaiyahModal('د')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">د</button>
+                  <button type="button" onclick="insertHijaiyahModal('ذ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ذ</button>
+                  <button type="button" onclick="insertHijaiyahModal('ر')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ر</button>
+                  <button type="button" onclick="insertHijaiyahModal('ز')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ز</button>
+                  <button type="button" onclick="insertHijaiyahModal('س')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">س</button>
+                  <button type="button" onclick="insertHijaiyahModal('ش')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ش</button>
+                  <button type="button" onclick="insertHijaiyahModal('ص')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ص</button>
+                  <button type="button" onclick="insertHijaiyahModal('ض')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ض</button>
+                  <button type="button" onclick="insertHijaiyahModal('ط')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ط</button>
+                  <button type="button" onclick="insertHijaiyahModal('ظ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ظ</button>
+                  <button type="button" onclick="insertHijaiyahModal('ع')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ع</button>
+                  <button type="button" onclick="insertHijaiyahModal('غ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">غ</button>
+                  <button type="button" onclick="insertHijaiyahModal('ف')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ف</button>
+                  <button type="button" onclick="insertHijaiyahModal('ق')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ق</button>
+                  <button type="button" onclick="insertHijaiyahModal('ك')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ك</button>
+                  <button type="button" onclick="insertHijaiyahModal('ل')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ل</button>
+                  <button type="button" onclick="insertHijaiyahModal('م')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">م</button>
+                  <button type="button" onclick="insertHijaiyahModal('ن')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ن</button>
+                  <button type="button" onclick="insertHijaiyahModal('و')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">و</button>
+                  <button type="button" onclick="insertHijaiyahModal('هـ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">هـ</button>
+                  <button type="button" onclick="insertHijaiyahModal('ء')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ء</button>
+                  <button type="button" onclick="insertHijaiyahModal('لا')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">لا</button>
+                  <button type="button" onclick="insertHijaiyahModal('ي')" class="w-7 h-7 bg-white hover:bg-emerald-100 border rounded text-sm font-bold shadow-sm">ي</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-medium text-slate-600 mb-1">Disimak Oleh (Guru)</label>
-            <input type="text" id="formGuru" placeholder="Ustadzah Salamah" class="w-full p-2 border border-slate-300 rounded-lg">
+            <label class="block font-medium text-slate-600 mb-1">Disimak Guru</label>
+            <select id="formGuru" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+              <option value="Ustadzah Salamah">Ustadzah Salamah</option>
+              <option value="Ustadzah Rosianah">Ustadzah Rosianah</option>
+            </select>
           </div>
           <div>
-            <label class="block font-medium text-slate-600 mb-1">Disimak Oleh (Ortu)</label>
-            <input type="text" id="formOrtu" placeholder="Disimak Ortu / Pending" class="w-full p-2 border border-slate-300 rounded-lg">
+            <label class="block font-medium text-slate-600 mb-1">Disimak Ortu</label>
+            <select id="formOrtu" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+              <option value="Pending">Pending (Belum Disimak)</option>
+              <option value="Sudah Disimak">Sudah Disimak Ortu</option>
+            </select>
           </div>
         </div>
 
@@ -193,40 +365,115 @@
   </div>
 
   <script>
-  
-
-    // ⚠️ SESUAIKAN DENGAN API URL & ANON KEY SUPABASE ANDA
     const SUPABASE_URL = "https://dzgshmfgklbtpgglcbnh.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Z3NobWZna2xidHBnZ2xjYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNDUwMTQsImV4cCI6MjEwMTcyMTAxNH0.BBqqL82VDj7G-unamkgGTNoiR3Eg_xGntDM4EofWhyA"; 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    const daftarSurat = [
+      "An-Nas", "Al-Falaq", "Al-Ikhlash", "Al-Lahab", "An-Nashr",
+      "Al-Kafirun", "Al-Kautsar", "Al-Ma'un", "Quraisy", "Al-Fil",
+      "Al-Humazah", "Al-'Asr", "At-Takatsur", "Al-Qari'ah", "Al-'Adiyat",
+      "Az-Zalzalah", "Al-Bayyinah", "Al-Qadr", "Al-'Alaq", "At-Tin",
+      "Asy-Syarh", "Ad-Dhuha", "Al-Lail", "Asy-Syams", "Al-Balad",
+      "Al-Fajr", "Al-Ghasyiyah", "Al-A'la", "Ath-Thariq", "Al-Buruj",
+      "Al-Insyiqaq", "Al-Muthaffifin", "Al-Infitar", "At-Takwir", "'Abasa",
+      "An-Nazi'at", "An-Naba'", "Al-Mursalat", "Al-Insan", "Al-Qiyamah",
+      "Al-Muddatstsir", "Al-Muzzammil", "Al-Jinn", "Nuh", "Al-Ma'arij",
+      "Al-Haqqah", "Al-Qalam", "Al-Mulk", "At-Tahrim", "At-Thalaq",
+      "At-Taghabun", "Al-Munafiqun", "Al-Jumu'ah", "Ash-Shaff", "Al-Mumtahanah",
+      "Al-Hasyr", "Al-Mujadilah", "Al-Hadid", "Al-Waqi'ah", "Ar-Rahman",
+      "Al-Qamar", "An-Najm", "Ath-Thur", "Adz-Dzariyat", "Qaf",
+      "Al-Hujurat", "Al-Fath", "Muhammad", "Al-Ahqaf", "Al-Jatsiyah",
+      "Ad-Dukhan", "Az-Zukhruf", "Asy-Syura", "Fushshilat", "Ghafir",
+      "Az-Zumar", "Shad", "Ash-Shaffat", "Ya-Sin", "Fathir",
+      "Saba'", "Al-Ahzab", "As-Sajdah", "Luqman", "Ar-Rum",
+      "Al-'Ankabut", "Al-Qasash", "An-Naml", "Asy-Syu'ara'", "Al-Furqan",
+      "An-Nur", "Al-Mu'minun", "Al-Hajj", "Al-Anbiya'", "Tha-Ha",
+      "Maryam", "Al-Kahf", "Al-Isra'", "An-Nahl", "Al-Hijr",
+      "Ibrahim", "Ar-Ra'd", "Yusuf", "Hud", "Yunus",
+      "At-Taubah", "Al-Anfal", "Al-A'raf", "Al-An'am", "Al-Ma'idah",
+      "An-Nisa'", "Ali 'Imran", "Al-Baqarah", "Al-Fatihah"
+    ];
+
     let listPrestasi = [];
+    let listFiltered = [];
     let listSantriMap = {};
+    let globalDataSantri = [];
+
+    // Variabel Pagination
+    let currentPage = 1;
+    let pageSize = 10;
 
     async function init() {
+      populateSuratDropdown();
       await loadOptionsSantri();
       await loadDataPrestasi();
+    }
+
+    function populateSuratDropdown() {
+      const selectSurat = document.getElementById('formSurat');
+      selectSurat.innerHTML = '<option value="">-- Pilih Surat --</option>';
+      daftarSurat.forEach((surat, index) => {
+        const no = 114 - index;
+        selectSurat.innerHTML += `<option value="${surat}">${no}. ${surat}</option>`;
+      });
+    }
+
+    function insertHijaiyahModal(char) {
+      const input = document.getElementById('formMateri');
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const text = input.value;
+      input.value = text.substring(0, start) + char + text.substring(end);
+      input.selectionStart = input.selectionEnd = start + char.length;
+      input.focus();
     }
 
     async function loadOptionsSantri() {
       try {
         const { data, error } = await db.from('santri').select('id_santri, nama_santri, kelas').order('nama_santri');
         if (error) throw error;
+        globalDataSantri = data || [];
 
         const selectForm = document.getElementById('formSantri');
-        const selectFilter = document.getElementById('filterSantri');
+        const selectFilterKelas = document.getElementById('filterKelas');
 
         selectForm.innerHTML = '<option value="">-- Pilih Santri --</option>';
-        selectFilter.innerHTML = '<option value="">-- Semua Santri --</option>';
+        selectFilterKelas.innerHTML = '<option value="">-- Semua Kelas --</option>';
 
-        data.forEach(s => {
+        const daftarKelas = [...new Set(globalDataSantri.map(s => s.kelas))].filter(Boolean);
+        daftarKelas.forEach(k => {
+          selectFilterKelas.innerHTML += `<option value="${k}">${k}</option>`;
+        });
+
+        globalDataSantri.forEach(s => {
           listSantriMap[s.id_santri] = s;
           selectForm.innerHTML += `<option value="${s.id_santri}">${s.nama_santri} (${s.kelas})</option>`;
-          selectFilter.innerHTML += `<option value="${s.id_santri}">${s.nama_santri}</option>`;
         });
+
+        populateFilterSantriDropdown(globalDataSantri);
       } catch (err) {
-        console.error("Gagal memuat list santri:", err);
+        console.error("Gagal memuat santri:", err);
       }
+    }
+
+    function populateFilterSantriDropdown(santriList) {
+      const selectFilterSantri = document.getElementById('filterSantri');
+      selectFilterSantri.innerHTML = '<option value="">-- Semua Santri --</option>';
+      santriList.forEach(s => {
+        selectFilterSantri.innerHTML += `<option value="${s.id_santri}">${s.nama_santri}</option>`;
+      });
+    }
+
+    function onFilterKelasChange() {
+      const kelasDipilih = document.getElementById('filterKelas').value;
+      if (!kelasDipilih) {
+        populateFilterSantriDropdown(globalDataSantri);
+      } else {
+        const filtered = globalDataSantri.filter(s => s.kelas === kelasDipilih);
+        populateFilterSantriDropdown(filtered);
+      }
+      filterData();
     }
 
     async function loadDataPrestasi() {
@@ -237,39 +484,130 @@
           .order('tanggal', { ascending: false });
 
         if (error) throw error;
-        listPrestasi = data;
-        renderTampilan(listPrestasi);
+        listPrestasi = data || [];
+        updateKPICards(listPrestasi);
+        filterData();
       } catch (err) {
         alert("Gagal memuat data prestasi: " + err.message);
       }
     }
 
-    function renderTampilan(data) {
-      const mobileContainer = document.getElementById('mobileCardContainer');
-      const tableBody = document.getElementById('tabelPrestasiBody');
-      const totalSpan = document.getElementById('totalRecords');
+    function updateKPICards(data) {
+      const total = data.length;
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      const bulanIni = data.filter(d => (d.tanggal || '').startsWith(currentMonth)).length;
+      const verified = data.filter(d => (d.disimak_ortu || '').toLowerCase().includes('sudah')).length;
+      const pending = total - verified;
+
+      document.getElementById('kpiTotal').innerText = total;
+      document.getElementById('kpiBulanIni').innerText = bulanIni;
+      document.getElementById('kpiVerified').innerText = verified;
+      document.getElementById('kpiPending').innerText = pending;
+    }
+
+    function filterData() {
+      const kelasVal = document.getElementById('filterKelas').value;
+      const santriId = document.getElementById('filterSantri').value;
+      const statusOrtu = document.getElementById('filterStatusOrtu').value;
+      const periode = document.getElementById('filterPeriode').value;
+      const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const thisMonthStr = todayStr.substring(0, 7);
+
+      listFiltered = listPrestasi.filter(p => {
+        const namaSantri = p.santri ? p.santri.nama_santri.toLowerCase() : (listSantriMap[p.id_santri]?.nama_santri || '').toLowerCase();
+        const kelasSantri = p.santri ? p.santri.kelas : (listSantriMap[p.id_santri]?.kelas || '');
+
+        // 1. Filter Kelas
+        if (kelasVal && kelasSantri !== kelasVal) return false;
+
+        // 2. Filter Santri
+        if (santriId && String(p.id_santri) !== String(santriId)) return false;
+
+        // 3. Filter Status Ortu
+        const isVerified = (p.disimak_ortu || '').toLowerCase().includes('sudah');
+        if (statusOrtu === 'verified' && !isVerified) return false;
+        if (statusOrtu === 'pending' && isVerified) return false;
+
+        // 4. Filter Periode
+        if (periode === 'hari_ini' && p.tanggal !== todayStr) return false;
+        if (periode === 'bulan_ini' && !(p.tanggal || '').startsWith(thisMonthStr)) return false;
+
+        // 5. Keyword Search
+        if (keyword) {
+          const matchKey = 
+            (p.hafalan_surat && p.hafalan_surat.toLowerCase().includes(keyword)) ||
+            (p.ummi_jilid && p.ummi_jilid.toLowerCase().includes(keyword)) ||
+            (p.ummi_materi && p.ummi_materi.toLowerCase().includes(keyword)) ||
+            (p.disimak_guru && p.disimak_guru.toLowerCase().includes(keyword)) ||
+            namaSantri.includes(keyword);
+          if (!matchKey) return false;
+        }
+
+        return true;
+      });
+
+      currentPage = 1;
+      renderPaginatedView();
+    }
+
+    function renderPaginatedView() {
+      const total = listFiltered.length;
+      const totalPages = Math.ceil(total / pageSize) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, total);
+      const pageData = listFiltered.slice(startIndex, endIndex);
+
+      document.getElementById('totalRecords').innerText = `${total} Data`;
+      document.getElementById('pageInfo').innerText = total === 0 ? 'Menampilkan 0 dari 0 data' : `Menampilkan ${startIndex + 1} - ${endIndex} dari ${total} data`;
+
+      // Render Cards & Table
+      renderCards(pageData);
+      renderTable(pageData);
+
+      // Render Navigasi Halaman
+      document.getElementById('btnPrevPage').disabled = (currentPage <= 1);
+      document.getElementById('btnNextPage').disabled = (currentPage >= totalPages);
+
+      const numbersContainer = document.getElementById('paginationNumbers');
+      numbersContainer.innerHTML = '';
       
-      mobileContainer.innerHTML = '';
-      tableBody.innerHTML = '';
-      totalSpan.innerText = `${data.length} Data`;
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          const isActive = (i === currentPage);
+          numbersContainer.innerHTML += `
+            <button onclick="goToPage(${i})" class="w-8 h-8 rounded-lg text-xs font-semibold ${isActive ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}">
+              ${i}
+            </button>
+          `;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          numbersContainer.innerHTML += `<span class="px-1 text-slate-400 self-center">...</span>`;
+        }
+      }
+    }
+
+    function renderCards(data) {
+      const container = document.getElementById('mobileCardContainer');
+      container.innerHTML = '';
 
       if (data.length === 0) {
-        const emptyState = `<div class="p-6 text-center text-slate-400 bg-white rounded-xl border border-slate-100 text-xs">Belum ada catatan prestasi santri.</div>`;
-        mobileContainer.innerHTML = emptyState;
-        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada catatan prestasi santri.</td></tr>`;
+        container.innerHTML = `<div class="p-6 text-center text-slate-400 bg-white rounded-xl border border-slate-100 text-xs">Tidak ada catatan prestasi yang cocok dengan filter.</div>`;
         return;
       }
 
       data.forEach(item => {
-        const namaSantri = item.santri ? item.santri.nama_santri : (listSantriMap[item.id_santri]?.nama_santri || 'Santri Terhapus');
+        const namaSantri = item.santri ? item.santri.nama_santri : (listSantriMap[item.id_santri]?.nama_santri || 'Santri');
         const kelasSantri = item.santri ? item.santri.kelas : (listSantriMap[item.id_santri]?.kelas || '-');
 
         const isOrtuVerified = item.disimak_ortu && item.disimak_ortu.toLowerCase().includes('sudah');
-		const badgeOrtu = isOrtuVerified 
-		  ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">✓ Sudah Disimak Ortu</span>`
-		  : `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-medium">⏳ Menunggu Konfirmasi Ortu</span>`;
+        const badgeOrtu = isOrtuVerified 
+          ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">✓ Selesai Disimak Ortu</span>`
+          : `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-medium">⏳ Belum Disimak Ortu</span>`;
 
-        mobileContainer.innerHTML += `
+        container.innerHTML += `
           <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 space-y-3">
             <div class="flex justify-between items-start border-b border-slate-100 pb-2">
               <div>
@@ -313,19 +651,44 @@
             </div>
           </div>
         `;
+      });
+    }
 
-        const infoHafalan = item.hafalan_surat ? `<b>${item.hafalan_surat}</b> (Ayat ${item.hafalan_ayat || '-'}) <br><span class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Nilai: ${item.hafalan_nilai || '-'}</span>` : '<span class="text-slate-400">-</span>';
-        const infoUmmi = item.ummi_jilid ? `<b>${item.ummi_jilid}</b> Hal. ${item.ummi_halaman || '-'} <br><span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Materi: ${item.ummi_materi || '-'} | Nilai: ${item.ummi_nilai || '-'}</span>` : '<span class="text-slate-400">-</span>';
+    function renderTable(data) {
+      const tableBody = document.getElementById('tabelPrestasiBody');
+      tableBody.innerHTML = '';
+
+      if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Tidak ada catatan prestasi yang cocok dengan filter.</td></tr>`;
+        return;
+      }
+
+      data.forEach(item => {
+        const namaSantri = item.santri ? item.santri.nama_santri : (listSantriMap[item.id_santri]?.nama_santri || 'Santri');
+        const kelasSantri = item.santri ? item.santri.kelas : (listSantriMap[item.id_santri]?.kelas || '-');
+
+        const isOrtuVerified = item.disimak_ortu && item.disimak_ortu.toLowerCase().includes('sudah');
+        const badgeOrtu = isOrtuVerified 
+          ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">✓ Sudah Disimak</span>`
+          : `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-medium">⏳ Belum Disimak</span>`;
+
+        const infoHafalan = item.hafalan_surat 
+          ? `<b>${item.hafalan_surat}</b> (${item.hafalan_ayat || '-'}) <br><span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded">Nilai: ${item.hafalan_nilai || '-'}</span>` 
+          : '<span class="text-slate-400">-</span>';
+
+        const infoUmmi = item.ummi_jilid 
+          ? `<b>${item.ummi_jilid}</b> Hal.${item.ummi_halaman || '-'} <br><span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded">Nilai: ${item.ummi_nilai || '-'}</span>` 
+          : '<span class="text-slate-400">-</span>';
 
         tableBody.innerHTML += `
           <tr class="hover:bg-slate-50 transition-all">
             <td class="p-3">
               <span class="font-semibold text-slate-800">${item.tanggal || '-'}</span>
-              <div class="text-slate-400 text-[11px]">TM Ke: ${item.tm_ke || '-'}</div>
+              <div class="text-slate-400 text-[10px]">TM: ${item.tm_ke || '-'}</div>
             </td>
             <td class="p-3">
-              <div class="font-semibold text-slate-800">${namaSantri}</div>
-              <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px]">${kelasSantri}</span>
+              <div class="font-bold text-slate-800">${namaSantri}</div>
+              <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-medium">${kelasSantri}</span>
             </td>
             <td class="p-3 leading-relaxed">${infoHafalan}</td>
             <td class="p-3 leading-relaxed">${infoUmmi}</td>
@@ -334,14 +697,42 @@
               <div>${badgeOrtu}</div>
             </td>
             <td class="p-3 text-center space-x-1">
-              <button onclick="bukaModalEdit(${item.id_prestasi})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded text-xs">Edit</button>
-              <button onclick="hapusPrestasi(${item.id_prestasi})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-1 rounded text-xs">Hapus</button>
+              <button onclick="bukaModalEdit(${item.id_prestasi})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded text-xs font-semibold">Edit</button>
+              <button onclick="hapusPrestasi(${item.id_prestasi})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-1 rounded text-xs font-semibold">Hapus</button>
             </td>
           </tr>
         `;
       });
     }
 
+    // Pagination Actions
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPaginatedView();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(listFiltered.length / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderPaginatedView();
+      }
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderPaginatedView();
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById('itemsPerPage').value);
+      currentPage = 1;
+      renderPaginatedView();
+    }
+
+    // Modal Edit & Update Prestasi
     function bukaModalEdit(id) {
       const item = listPrestasi.find(p => p.id_prestasi === id);
       if (!item) return;
@@ -353,15 +744,15 @@
 
       document.getElementById('formSurat').value = item.hafalan_surat || '';
       document.getElementById('formAyat').value = item.hafalan_ayat || '';
-      document.getElementById('formNilaiHafalan').value = item.hafalan_nilai || '';
+      document.getElementById('formNilaiHafalan').value = item.hafalan_nilai || ''; // Input manual[cite: 1]
 
       document.getElementById('formJilid').value = item.ummi_jilid || '';
       document.getElementById('formHalaman').value = item.ummi_halaman || '';
       document.getElementById('formMateri').value = item.ummi_materi || '';
       document.getElementById('formNilaiUmmi').value = item.ummi_nilai || '';
 
-      document.getElementById('formGuru').value = item.disimak_guru || '';
-      document.getElementById('formOrtu').value = item.disimak_ortu || '';
+      document.getElementById('formGuru').value = item.disimak_guru || 'Ustadzah Salamah';
+      document.getElementById('formOrtu').value = (item.disimak_ortu && item.disimak_ortu.toLowerCase().includes('sudah')) ? 'Sudah Disimak' : 'Pending';
 
       const modal = document.getElementById('modalForm');
       modal.classList.remove('hidden');
@@ -376,7 +767,6 @@
 
     document.getElementById('formPrestasi').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
       const id = document.getElementById('editId').value;
       if (!id) return;
 
@@ -401,7 +791,7 @@
 
         alert("Catatan prestasi berhasil diperbarui!");
         tutupModal();
-        loadDataPrestasi();
+        await loadDataPrestasi();
       } catch (err) {
         alert("Gagal memperbarui data: " + err.message);
       }
@@ -415,29 +805,10 @@
         if (error) throw error;
 
         alert("Catatan prestasi berhasil dihapus.");
-        loadDataPrestasi();
+        await loadDataPrestasi();
       } catch (err) {
         alert("Gagal menghapus data: " + err.message);
       }
-    }
-
-    function filterData() {
-      const santriId = document.getElementById('filterSantri').value;
-      const keyword = document.getElementById('searchKeyword').value.toLowerCase();
-
-      const filtered = listPrestasi.filter(p => {
-        const matchSantri = !santriId || String(p.id_santri) === String(santriId);
-        const namaSantri = p.santri ? p.santri.nama_santri.toLowerCase() : '';
-        const matchKeyword = !keyword || 
-          (p.hafalan_surat && p.hafalan_surat.toLowerCase().includes(keyword)) ||
-          (p.ummi_jilid && p.ummi_jilid.toLowerCase().includes(keyword)) ||
-          (p.disimak_guru && p.disimak_guru.toLowerCase().includes(keyword)) ||
-          namaSantri.includes(keyword);
-
-        return matchSantri && matchKeyword;
-      });
-
-      renderTampilan(filtered);
     }
 
     init();
