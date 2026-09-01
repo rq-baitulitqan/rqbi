@@ -4,16 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rumah Qur'an Baitul Itqan - Rekap Absensi Santri</title>
-    <script>
+  
+  <script>
     const PIN_RAHASIA = "laatahzan"; // 🔑 PIN Akses Pengurus
 
     function cekAksesPengurus() {
-      // Cek apakah browser sudah menyimpan status login
       const isAuth = localStorage.getItem('rqbi_authenticated');
-
       if (isAuth !== 'true') {
         const inputPin = prompt("🔒 Halaman Terbatas!\nMasukkan PIN Pengurus / Ustadzah Rumah Qur'an Baitul Itqan:");
-        
         if (inputPin === PIN_RAHASIA) {
           localStorage.setItem('rqbi_authenticated', 'true');
           alert("✅ PIN Benar! Akses diberikan.");
@@ -31,76 +29,148 @@
       }
     }
 
-    // ⚠️ WAJIB DIPANGGIL AGAR PERINTAH PIN LANGSUNG DIJALANKAN
     cekAksesPengurus();
   </script>
+
   <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk8fg3wgm/image/upload/v1786163785/fav_ugojic.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 pb-10">
+<body class="bg-slate-50 font-sans text-slate-800 pb-16">
 
-  <div class="bg-emerald-600 text-white p-3 sticky top-0 shadow-md z-10 flex justify-between items-center">
+  <!-- Top Navbar -->
+  <div class="bg-emerald-600 text-white p-3 sticky top-0 shadow-md z-10 flex justify-between items-center px-4 md:px-8">
     <div class="flex items-center gap-2.5">
       <img src="https://res.cloudinary.com/dk8fg3wgm/image/upload/v1786163785/fav_ugojic.png" alt="Logo RQ Baitul Itqan" class="w-8 h-8 rounded-full bg-white p-0.5 shadow-sm">
       <div>
         <h1 class="text-sm sm:text-base font-bold leading-tight">Rumah Qur'an Baitul Itqan</h1>
-        <p class="text-[10px] text-emerald-100 font-medium">📋 Rekap Absensi Kehadiran</p>
+        <p class="text-[10px] text-emerald-100 font-medium">📋 Rekapitulasi Presensi Kehadiran</p>
       </div>
     </div>
-    <a href="index.html" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-500 font-medium">
-      ← Utama
-    </a>
+    <div class="flex items-center gap-2">
+      <button onclick="logoutPengurus()" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1.5 rounded-lg border border-emerald-500 font-medium transition-all">
+        🔒 Kunci
+      </button>
+      <a href="index.html" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-500 font-medium transition-all">
+        ← Utama
+      </a>
+    </div>
   </div>
 
   <div class="max-w-6xl mx-auto p-4 space-y-4">
 
-    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100 space-y-3">
-      <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-        <a href="index.html" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all text-white font-medium px-4 py-2.5 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow">
-          <span>📋</span> Input Absensi Baru
-        </a>
+    <!-- KPI Summary Metrics -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm col-span-2 lg:col-span-1">
+        <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">Tingkat Hadir</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="statPersenHadir" class="text-xl font-black text-emerald-700">0%</span>
+          <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded">Rasio</span>
+        </div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider block">Hadir (H)</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="statHadir" class="text-xl font-bold text-emerald-800">0</span>
+          <span class="text-xs text-slate-400">Santri</span>
+        </div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider block">Sakit (S)</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="statSakit" class="text-xl font-bold text-amber-800">0</span>
+          <span class="text-xs text-slate-400">Santri</span>
+        </div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[10px] font-semibold text-blue-700 uppercase tracking-wider block">Izin (I)</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="statIzin" class="text-xl font-bold text-blue-800">0</span>
+          <span class="text-xs text-slate-400">Santri</span>
+        </div>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+        <span class="text-[10px] font-semibold text-rose-700 uppercase tracking-wider block">Alfa (A)</span>
+        <div class="flex items-baseline justify-between mt-1">
+          <span id="statAlfa" class="text-xl font-bold text-rose-800">0</span>
+          <span class="text-xs text-slate-400">Santri</span>
+        </div>
+      </div>
+    </div>
 
-        <div class="flex flex-wrap sm:flex-nowrap gap-2">
-          <select id="filterKelas" onchange="filterData()" class="text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+    <!-- Filter Bar Card -->
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100 space-y-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-2">
+        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">🔍 Filter Presensi Santri</span>
+        <div class="flex items-center gap-2">
+          <button onclick="resetFilter()" class="text-xs text-emerald-700 hover:text-emerald-800 font-semibold underline">
+            Reset Filter
+          </button>
+          <a href="index.html" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-sm transition-all">
+            <span>➕</span> Form Absensi
+          </a>
+			<a href="cetak_absensi.html" class="bg-slate-800 hover:bg-slate-900 text-white font-medium px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-sm transition-all">
+  <span>🖨️</span> Cetak Rekap Resmi
+</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Kelas</label>
+          <select id="filterKelas" onchange="filterData()" class="w-full text-xs p-2 border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-emerald-500">
             <option value="">-- Semua Kelas --</option>
           </select>
-          <input type="date" id="filterTanggal" onchange="filterData()" class="text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
-          <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Cari nama santri..." class="text-xs p-2.5 border border-slate-300 rounded-lg w-full sm:w-48 focus:ring-2 focus:ring-emerald-500 outline-none">
         </div>
-      </div>
 
-      <div class="grid grid-cols-4 gap-2 text-center pt-2 border-t border-slate-100 text-xs">
-        <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-lg">
-          <span class="text-[10px] text-emerald-700 font-bold block uppercase">Hadir (H)</span>
-          <span id="statHadir" class="text-base font-bold text-emerald-800">0</span>
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Status Kehadiran</label>
+          <select id="filterStatus" onchange="filterData()" class="w-full text-xs p-2 border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="">-- Semua Status --</option>
+            <option value="Hadir">Hadir (H)</option>
+            <option value="Sakit">Sakit (S)</option>
+            <option value="Izin">Izin (I)</option>
+            <option value="Alfa">Alfa (A)</option>
+          </select>
         </div>
-        <div class="bg-amber-50 border border-amber-200 p-2 rounded-lg">
-          <span class="text-[10px] text-amber-700 font-bold block uppercase">Sakit (S)</span>
-          <span id="statSakit" class="text-base font-bold text-amber-800">0</span>
+
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Tanggal Absen</label>
+          <input type="date" id="filterTanggal" onchange="filterData()" class="w-full text-xs p-2 border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
-        <div class="bg-blue-50 border border-blue-200 p-2 rounded-lg">
-          <span class="text-[10px] text-blue-700 font-bold block uppercase">Izin (I)</span>
-          <span id="statIzin" class="text-base font-bold text-blue-800">0</span>
-        </div>
-        <div class="bg-rose-50 border border-rose-200 p-2 rounded-lg">
-          <span class="text-[10px] text-rose-700 font-bold block uppercase">Alfa (A)</span>
-          <span id="statAlfa" class="text-base font-bold text-rose-800">0</span>
+
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-500 mb-1">Pencarian Nama</label>
+          <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Ketik nama santri..." class="w-full text-xs p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
       </div>
     </div>
 
+    <!-- Data Counter & Page Size Selector -->
     <div class="flex justify-between items-center px-1">
-      <h2 class="text-xs font-bold text-slate-600 uppercase tracking-wider" id="labelTampilan">Absensi Hari Ini</h2>
-      <button onclick="resetFilter()" class="text-[11px] text-emerald-600 hover:underline font-semibold">Tampilkan Semua Riwayat</button>
+      <div class="flex items-center gap-2">
+        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider" id="labelTampilan">Hasil Presensi</h2>
+        <span id="badgeTotalFiltered" class="text-[11px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">0 Data</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-xs text-slate-500">
+        <span>Tampilkan</span>
+        <select id="itemsPerPage" onchange="changePageSize()" class="border border-slate-300 rounded p-1 bg-white text-xs outline-none">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+        <span>per baris</span>
+      </div>
     </div>
 
-    <div id="mobileCardContainer" class="block md:hidden space-y-3">
+    <!-- Mobile Card View -->
+    <div id="mobileCardContainer" class="block md:hidden space-y-2.5">
       <div class="p-6 text-center text-slate-400 bg-white rounded-xl border border-slate-100 text-xs">
         Sedang mengambil data absensi...
       </div>
     </div>
 
+    <!-- Desktop Table View -->
     <div class="hidden md:block bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
@@ -122,10 +192,25 @@
       </div>
     </div>
 
+    <!-- Pagination Controls -->
+    <div id="paginationContainer" class="bg-white rounded-xl shadow-sm p-3 border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs">
+      <span id="pageInfo" class="text-slate-500 font-medium">Menampilkan 0 - 0 dari 0 data</span>
+      <div class="flex items-center gap-1">
+        <button id="btnPrevPage" onclick="prevPage()" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-all">
+          ← Sebelumnya
+        </button>
+        <div id="paginationNumbers" class="flex gap-1"></div>
+        <button id="btnNextPage" onclick="nextPage()" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-all">
+          Berikutnya →
+        </button>
+      </div>
+    </div>
+
   </div>
 
+  <!-- Modal Edit Status Absensi -->
   <div id="modalEdit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-lg p-5 max-w-sm w-full space-y-4">
+    <div class="bg-white rounded-2xl shadow-xl p-5 max-w-sm w-full space-y-4 border border-slate-100">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="text-sm font-bold text-slate-800">✏️ Edit Status Absensi</h3>
         <button onclick="tutupModalEdit()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
@@ -139,11 +224,11 @@
         </div>
         <div>
           <label class="block font-medium text-slate-600 mb-1">Tanggal Absen</label>
-          <input type="date" id="editTanggal" required class="w-full p-2.5 border border-slate-300 rounded-lg">
+          <input type="date" id="editTanggal" required class="w-full p-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
         <div>
           <label class="block font-medium text-slate-600 mb-1">Status Kehadiran</label>
-          <select id="editStatus" required class="w-full p-2.5 border border-slate-300 rounded-lg bg-white">
+          <select id="editStatus" required class="w-full p-2.5 border border-slate-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
             <option value="Hadir">Hadir (H)</option>
             <option value="Sakit">Sakit (S)</option>
             <option value="Izin">Izin (I)</option>
@@ -152,36 +237,34 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t">
-          <button type="button" onclick="tutupModalEdit()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-medium">Batal</button>
-          <button type="submit" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium">Simpan Perubahan</button>
+          <button type="button" onclick="tutupModalEdit()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-medium">Batal</button>
+          <button type="submit" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all shadow">Simpan Perubahan</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-  
-
-	
-    // ⚠️ SESUAIKAN DENGAN API URL & ANON KEY SUPABASE ANDA
     const SUPABASE_URL = "https://dzgshmfgklbtpgglcbnh.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Z3NobWZna2xidHBnZ2xjYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNDUwMTQsImV4cCI6MjEwMTcyMTAxNH0.BBqqL82VDj7G-unamkgGTNoiR3Eg_xGntDM4EofWhyA"; 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let listAbsensi = [];
+    let listFiltered = [];
     let listSantriMap = {};
 
-    // Tanggal Hari Ini (Format YYYY-MM-DD)
     const todayISO = new Date().toISOString().substring(0, 10);
 
+    // Variabel Pagination
+    let currentPage = 1;
+    let pageSize = 10;
+
     async function init() {
-      // Set default filter tanggal ke Hari Ini saat pertama dibuka
       document.getElementById('filterTanggal').value = todayISO;
       await loadOptionsSantri();
       await loadDataAbsensi();
     }
 
-    // Load daftar santri untuk pemetaan ID ke Nama & Dropdown Kelas
     async function loadOptionsSantri() {
       try {
         const { data, error } = await db.from('santri').select('*').order('nama_santri');
@@ -200,11 +283,10 @@
           selectFilterKelas.innerHTML += `<option value="${kelas}">${kelas}</option>`;
         });
       } catch (err) {
-        console.error("Gagal memuat list santri:", err);
+        console.error("Gagal memuat daftar santri:", err);
       }
     }
 
-    // READ: Load Data Absensi dari Supabase
     async function loadDataAbsensi() {
       try {
         const { data, error } = await db
@@ -213,24 +295,46 @@
           .order('tanggal', { ascending: false });
 
         if (error) throw error;
-        listAbsensi = data;
-        
-        // Terapkan filter langsung (sehingga otomatis ter-filter untuk Hari Ini)
+        listAbsensi = data || [];
         filterData();
       } catch (err) {
         alert("Gagal memuat data absensi: " + err.message);
       }
     }
 
-    // Render Tampilan Card (Mobile) & Table (Desktop)
-    function renderTampilan(data) {
-      const mobileContainer = document.getElementById('mobileCardContainer');
-      const tableBody = document.getElementById('tabelAbsensiBody');
-      
-      mobileContainer.innerHTML = '';
-      tableBody.innerHTML = '';
+    function filterData() {
+      const kelas = document.getElementById('filterKelas').value;
+      const status = document.getElementById('filterStatus').value;
+      const tanggal = document.getElementById('filterTanggal').value;
+      const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+      const labelTampilan = document.getElementById('labelTampilan');
 
-      // Hitung Statistik
+      if (tanggal === todayISO) {
+        labelTampilan.innerText = "Presensi Hari Ini";
+      } else if (tanggal) {
+        labelTampilan.innerText = `Presensi Tanggal (${tanggal})`;
+      } else {
+        labelTampilan.innerText = "Semua Riwayat Presensi";
+      }
+
+      listFiltered = listAbsensi.filter(a => {
+        const kelasSantri = a.santri ? a.santri.kelas : (listSantriMap[a.id_santri]?.kelas || '');
+        const namaSantri = a.santri ? a.santri.nama_santri.toLowerCase() : (listSantriMap[a.id_santri]?.nama_santri.toLowerCase() || '');
+
+        const matchKelas = !kelas || kelasSantri === kelas;
+        const matchStatus = !status || a.status === status;
+        const matchTanggal = !tanggal || a.tanggal === tanggal;
+        const matchKeyword = !keyword || namaSantri.includes(keyword);
+
+        return matchKelas && matchStatus && matchTanggal && matchKeyword;
+      });
+
+      updateKPI(listFiltered);
+      currentPage = 1;
+      renderPaginatedView();
+    }
+
+    function updateKPI(data) {
       let h = 0, s = 0, i = 0, a = 0;
       data.forEach(item => {
         const st = (item.status || '').toLowerCase();
@@ -240,37 +344,79 @@
         else if (st === 'alfa') a++;
       });
 
+      const total = data.length;
+      const persenHadir = total > 0 ? Math.round((h / total) * 100) : 0;
+
+      document.getElementById('statPersenHadir').innerText = `${persenHadir}%`;
       document.getElementById('statHadir').innerText = h;
       document.getElementById('statSakit').innerText = s;
       document.getElementById('statIzin').innerText = i;
       document.getElementById('statAlfa').innerText = a;
+    }
+
+    function renderPaginatedView() {
+      const total = listFiltered.length;
+      const totalPages = Math.ceil(total / pageSize) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, total);
+      const pageData = listFiltered.slice(startIndex, endIndex);
+
+      document.getElementById('badgeTotalFiltered').innerText = `${total} Data`;
+      document.getElementById('pageInfo').innerText = total === 0 ? 'Menampilkan 0 dari 0 data' : `Menampilkan ${startIndex + 1} - ${endIndex} dari ${total} data`;
+
+      renderCards(pageData);
+      renderTable(pageData);
+
+      // Pagination Controls
+      document.getElementById('btnPrevPage').disabled = (currentPage <= 1);
+      document.getElementById('btnNextPage').disabled = (currentPage >= totalPages);
+
+      const numbersContainer = document.getElementById('paginationNumbers');
+      numbersContainer.innerHTML = '';
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          const isActive = (i === currentPage);
+          numbersContainer.innerHTML += `
+            <button onclick="goToPage(${i})" class="w-8 h-8 rounded-lg text-xs font-semibold ${isActive ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}">
+              ${i}
+            </button>
+          `;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          numbersContainer.innerHTML += `<span class="px-1 text-slate-400 self-center">...</span>`;
+        }
+      }
+    }
+
+    function getBadgeStatus(st) {
+      if (st === 'Hadir') {
+        return `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-bold">✓ Hadir</span>`;
+      } else if (st === 'Sakit') {
+        return `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[11px] font-bold">😷 Sakit</span>`;
+      } else if (st === 'Izin') {
+        return `<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[11px] font-bold">✉️ Izin</span>`;
+      } else {
+        return `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[11px] font-bold">❌ Alfa</span>`;
+      }
+    }
+
+    function renderCards(data) {
+      const container = document.getElementById('mobileCardContainer');
+      container.innerHTML = '';
 
       if (data.length === 0) {
-        const emptyState = `<div class="p-6 text-center text-slate-400 bg-white rounded-xl border border-slate-100 text-xs">Belum ada riwayat absensi untuk filter ini.</div>`;
-        mobileContainer.innerHTML = emptyState;
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada riwayat absensi untuk filter ini.</td></tr>`;
+        container.innerHTML = `<div class="p-6 text-center text-slate-400 bg-white rounded-xl border border-slate-100 text-xs">Belum ada riwayat absensi untuk filter ini.</div>`;
         return;
       }
 
       data.forEach(item => {
         const namaSantri = item.santri ? item.santri.nama_santri : (listSantriMap[item.id_santri]?.nama_santri || 'Santri Terhapus');
         const kelasSantri = item.santri ? item.santri.kelas : (listSantriMap[item.id_santri]?.kelas || '-');
+        const badgeStatus = getBadgeStatus(item.status || 'Hadir');
 
-        // Formatter Status Badge
-        let badgeStatus = '';
-        const st = (item.status || 'Hadir');
-        if (st === 'Hadir') {
-          badgeStatus = `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-bold">✓ Hadir</span>`;
-        } else if (st === 'Sakit') {
-          badgeStatus = `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[11px] font-bold">😷 Sakit</span>`;
-        } else if (st === 'Izin') {
-          badgeStatus = `<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[11px] font-bold">✉️ Izin</span>`;
-        } else {
-          badgeStatus = `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[11px] font-bold">❌ Alfa</span>`;
-        }
-
-        // 1. RENDER CARD MOBILE
-        mobileContainer.innerHTML += `
+        container.innerHTML += `
           <div class="bg-white rounded-xl p-3.5 shadow-sm border border-slate-100 flex items-center justify-between gap-2">
             <div class="space-y-1">
               <h3 class="font-bold text-xs text-slate-800">${namaSantri}</h3>
@@ -287,8 +433,23 @@
             </div>
           </div>
         `;
+      });
+    }
 
-        // 2. RENDER TABEL DESKTOP
+    function renderTable(data) {
+      const tableBody = document.getElementById('tabelAbsensiBody');
+      tableBody.innerHTML = '';
+
+      if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada riwayat absensi untuk filter ini.</td></tr>`;
+        return;
+      }
+
+      data.forEach(item => {
+        const namaSantri = item.santri ? item.santri.nama_santri : (listSantriMap[item.id_santri]?.nama_santri || 'Santri Terhapus');
+        const kelasSantri = item.santri ? item.santri.kelas : (listSantriMap[item.id_santri]?.kelas || '-');
+        const badgeStatus = getBadgeStatus(item.status || 'Hadir');
+
         tableBody.innerHTML += `
           <tr class="hover:bg-slate-50 transition-all">
             <td class="p-3 font-semibold text-slate-800">${item.tanggal || '-'}</td>
@@ -296,15 +457,42 @@
             <td class="p-3"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[11px] font-medium">${kelasSantri}</span></td>
             <td class="p-3 text-center">${badgeStatus}</td>
             <td class="p-3 text-center space-x-1">
-              <button onclick="bukaModalEdit(${item.id_absen})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded text-xs">Edit</button>
-              <button onclick="hapusAbsen(${item.id_absen})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-1 rounded text-xs">Hapus</button>
+              <button onclick="bukaModalEdit(${item.id_absen})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded text-xs font-semibold">Edit</button>
+              <button onclick="hapusAbsen(${item.id_absen})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-1 rounded text-xs font-semibold">Hapus</button>
             </td>
           </tr>
         `;
       });
     }
 
-    // UPDATE: Modal Handlers
+    // Pagination Actions
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPaginatedView();
+      }
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(listFiltered.length / pageSize);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderPaginatedView();
+      }
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderPaginatedView();
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById('itemsPerPage').value);
+      currentPage = 1;
+      renderPaginatedView();
+    }
+
+    // Edit Handlers
     function bukaModalEdit(id) {
       const item = listAbsensi.find(a => a.id_absen === id);
       if (!item) return;
@@ -339,13 +527,13 @@
 
         alert("Data absensi berhasil diperbarui!");
         tutupModalEdit();
-        loadDataAbsensi();
+        await loadDataAbsensi();
       } catch (err) {
         alert("Gagal memperbarui absensi: " + err.message);
       }
     });
 
-    // DELETE: Hapus Absensi
+    // Delete Handlers
     async function hapusAbsen(id) {
       if (!confirm("Apakah Anda yakin ingin menghapus data absensi ini?")) return;
 
@@ -354,44 +542,15 @@
         if (error) throw error;
 
         alert("Data absensi berhasil dihapus.");
-        loadDataAbsensi();
+        await loadDataAbsensi();
       } catch (err) {
         alert("Gagal menghapus absensi: " + err.message);
       }
     }
 
-    // FILTER & SEARCH
-    function filterData() {
-      const kelas = document.getElementById('filterKelas').value;
-      const tanggal = document.getElementById('filterTanggal').value;
-      const keyword = document.getElementById('searchKeyword').value.toLowerCase();
-      const labelTampilan = document.getElementById('labelTampilan');
-
-      if (tanggal === todayISO) {
-        labelTampilan.innerText = "Absensi Hari Ini";
-      } else if (tanggal) {
-        labelTampilan.innerText = `Absensi Tanggal (${tanggal})`;
-      } else {
-        labelTampilan.innerText = "Semua Riwayat Absensi";
-      }
-
-      const filtered = listAbsensi.filter(a => {
-        const kelasSantri = a.santri ? a.santri.kelas : (listSantriMap[a.id_santri]?.kelas || '');
-        const namaSantri = a.santri ? a.santri.nama_santri.toLowerCase() : (listSantriMap[a.id_santri]?.nama_santri.toLowerCase() || '');
-
-        const matchKelas = !kelas || kelasSantri === kelas;
-        const matchTanggal = !tanggal || a.tanggal === tanggal;
-        const matchKeyword = !keyword || namaSantri.includes(keyword);
-
-        return matchKelas && matchTanggal && matchKeyword;
-      });
-
-      renderTampilan(filtered);
-    }
-
-    // Reset Filter (Menghapus Filter Tanggal & Menampilkan Semua Riwayat)
     function resetFilter() {
       document.getElementById('filterKelas').value = '';
+      document.getElementById('filterStatus').value = '';
       document.getElementById('filterTanggal').value = '';
       document.getElementById('searchKeyword').value = '';
       filterData();
