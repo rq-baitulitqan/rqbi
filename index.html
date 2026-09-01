@@ -9,12 +9,9 @@
     const PIN_RAHASIA = "laatahzan"; // 🔑 PIN Akses Pengurus
 
     function cekAksesPengurus() {
-      // Cek apakah browser sudah menyimpan status login
       const isAuth = localStorage.getItem('rqbi_authenticated');
-
       if (isAuth !== 'true') {
         const inputPin = prompt("🔒 Halaman Terbatas!\nMasukkan PIN Pengurus / Ustadzah Rumah Qur'an Baitul Itqan:");
-        
         if (inputPin === PIN_RAHASIA) {
           localStorage.setItem('rqbi_authenticated', 'true');
           alert("✅ PIN Benar! Akses diberikan.");
@@ -57,7 +54,7 @@
 
   <div class="max-w-md md:max-w-3xl lg:max-w-4xl mx-auto p-4 space-y-4">
     
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-medium mb-2">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-medium mb-2">
       <a href="santri.html" class="bg-white hover:bg-emerald-50 hover:border-emerald-300 text-emerald-700 py-2.5 px-2 rounded-lg border border-slate-200 shadow-sm flex items-center justify-center gap-1.5 transition-all text-center">
         <span>👥</span> Kelola Santri
       </a>
@@ -81,6 +78,7 @@
       </button>
     </div>
 
+    <!-- TAB PRESTASI -->
     <div id="tabPrestasi" class="space-y-4">
       <form id="formPrestasi" class="bg-white rounded-2xl shadow-sm p-5 md:p-7 space-y-5 border border-slate-100">
         
@@ -149,7 +147,7 @@
                 <label class="block text-[11px] font-medium text-slate-600 mb-1">Jilid/Qur'an</label>
                 <select id="ummi_jilid" class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white">
                   <option value="">-- Pilih Jilid/Qur'an --</option>
-                  <option value="Jilid 1">PRA TK</option>
+                  <option value="PRA TK">PRA TK</option>
                   <option value="Jilid 1">Jilid 1</option>
                   <option value="Jilid 2">Jilid 2</option>
                   <option value="Jilid 3">Jilid 3</option>
@@ -260,8 +258,45 @@
         </button>
 
       </form>
+
+      <!-- Antrean Prestasi Hari Ini yang Belum Disimak Ortu -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3">
+          <div>
+            <h3 class="text-xs md:text-sm font-bold text-slate-800">⏳ Antrean Belum Disimak Ortu (<span id="labelTglHariIni">-</span>)</h3>
+            <p class="text-[11px] text-slate-500" id="totalHariIniInfo">Memuat antrean...</p>
+          </div>
+          <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-lg">Data hilang otomatis jika ortu sudah simak</span>
+        </div>
+
+        <!-- Mobile Card Antrean -->
+        <div id="mobileCardPrestasiContainer" class="block md:hidden space-y-3">
+          <div class="p-4 text-center text-slate-400 bg-slate-50 rounded-xl text-xs">Sedang memuat data...</div>
+        </div>
+
+        <!-- Desktop Table Antrean -->
+        <div class="hidden md:block overflow-x-auto border rounded-xl">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 border-b font-semibold text-slate-700">
+              <tr>
+                <th class="p-3">Santri & Kelas</th>
+                <th class="p-3">Setoran Hafalan</th>
+                <th class="p-3">Metode Ummi</th>
+                <th class="p-3">Penyimak</th>
+                <th class="p-3 text-center">Aksi / Kirim Simak</th>
+              </tr>
+            </thead>
+            <tbody id="tabelPrestasiBody" class="divide-y text-slate-600">
+              <tr>
+                <td colspan="5" class="p-4 text-center text-slate-400">Sedang memuat data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
+    <!-- TAB ABSENSI -->
     <div id="tabAbsensi" class="hidden space-y-4">
       <div class="bg-white rounded-2xl shadow-sm p-5 md:p-7 space-y-4 border border-slate-100">
         
@@ -303,49 +338,145 @@
 
   </div>
 
+  <!-- Modal Edit Prestasi -->
+  <div id="modalEditPrestasi" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-xl p-5 md:p-6 max-w-md w-full space-y-4 my-6 border border-slate-100">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="text-xs md:text-sm font-bold text-slate-800">✏️ Koreksi Nilai / Prestasi Santri</h3>
+        <button onclick="tutupModalEdit()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+      </div>
+
+      <form id="formEditPrestasi" class="space-y-3 text-xs">
+        <input type="hidden" id="edit_id_prestasi">
+
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Nama Santri</label>
+          <input type="text" id="edit_nama_santri" disabled class="w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 font-semibold text-slate-700">
+        </div>
+
+        <div class="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 space-y-2.5">
+          <div class="font-bold text-emerald-800 text-[11px]">🌿 Setoran Hafalan</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5">Surat</label>
+              <select id="edit_hafalan_surat" class="w-full border rounded-lg p-2 bg-white text-xs"></select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5">Ayat</label>
+              <input type="text" id="edit_hafalan_ayat" class="w-full border rounded-lg p-2 text-xs bg-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">Nilai Hafalan</label>
+            <input type="text" id="edit_hafalan_nilai" class="w-full border rounded-lg p-2 text-xs bg-white font-medium">
+          </div>
+        </div>
+
+        <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100 space-y-2.5">
+          <div class="font-bold text-blue-800 text-[11px]">📘 Metode Ummi</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5">Jilid / Tahap</label>
+              <select id="edit_ummi_jilid" class="w-full border rounded-lg p-2 bg-white text-xs">
+                <option value="">-- Pilih Jilid --</option>
+                <option value="PRA TK">PRA TK</option>
+                <option value="Jilid 1">Jilid 1</option>
+                <option value="Jilid 2">Jilid 2</option>
+                <option value="Jilid 3">Jilid 3</option>
+                <option value="Jilid 4">Jilid 4</option>
+                <option value="Jilid 5">Jilid 5</option>
+                <option value="Jilid 6">Jilid 6</option>
+                <option value="Ghorib">Ghorib</option>
+                <option value="Tajwid">Tajwid</option>
+                <option value="Al Qur'an">Al Qur'an</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 mb-0.5">Halaman</label>
+              <input type="text" id="edit_ummi_halaman" class="w-full border rounded-lg p-2 text-xs bg-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">Materi / Pokok</label>
+            <input type="text" id="edit_ummi_materi" class="w-full border rounded-lg p-2 text-xs bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 mb-0.5">Nilai Ummi</label>
+            <select id="edit_ummi_nilai" class="w-full border rounded-lg p-2 bg-white text-xs font-semibold">
+              <option value="">-- Nilai Ummi --</option>
+              <option value="A+">A+</option><option value="A">A</option><option value="A-">A-</option>
+              <option value="B+">B+</option><option value="B">B</option><option value="B-">B-</option>
+              <option value="C+">C+</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Disimak Oleh (Guru)</label>
+          <select id="edit_disimak_guru" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
+            <option value="Ustadzah Salamah">Ustadzah Salamah</option>
+            <option value="Ustadzah Rosianah">Ustadzah Rosianah</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="tutupModalEdit()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-medium">Batal</button>
+          <button type="submit" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium">Simpan Koreksi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
-    // ⚠️ SESUAIKAN DENGAN API URL & ANON KEY SUPABASE ANDA
     const SUPABASE_URL = "https://dzgshmfgklbtpgglcbnh.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Z3NobWZna2xidHBnZ2xjYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNDUwMTQsImV4cCI6MjEwMTcyMTAxNH0.BBqqL82VDj7G-unamkgGTNoiR3Eg_xGntDM4EofWhyA"; 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ⚠️ SESUAIKAN DENGAN URL GITHUB PAGES ANDA
     const BASE_URL_GITHUB = "https://rq-baitulitqan.github.io/rqbi";
 
-    // Daftar 114 Surah Al-Qur'an (Dibalik dari 114 An-Nas s.d 1 Al-Fatihah)
     const daftarSurat = [
-      "An-Nas", "Al-Falaq", "Al-Ikhlash", "Al-Lahab", "An-Nashr", "Al-Kafirun", "Al-Kautsar", "Al-Ma'un", "Quraisy", "Al-Fil",
-      "Al-Humazah", "Al-'Asr", "At-Takatsur", "Al-Qari'ah", "Al-'Adiyat", "Az-Zalzalah", "Al-Bayyinah", "Al-Qadr", "Al-'Alaq", "At-Tin",
-      "Asy-Syarh", "Ad-Dhuha", "Al-Lail", "Asy-Syams", "Al-Balad", "Al-Fajr", "Al-Ghasyiyah", "Al-A'la", "Ath-Thariq", "Al-Buruj",
-      "Al-Insyiqaq", "Al-Muthaffifin", "Al-Infitar", "At-Takwir", "'Abasa", "An-Nazi'at", "An-Naba'", "Al-Mursalat", "Al-Insan", "Al-Qiyamah",
-      "Al-Muddatstsir", "Al-Muzzammil", "Al-Jinn", "Nuh", "Al-Ma'arij", "Al-Haqqah", "Al-Qalam", "Al-Mulk", "At-Tahrim", "At-Thalaq",
-      "At-Taghabun", "Al-Munafiqun", "Al-Jumu'ah", "Ash-Shaff", "Al-Mumtahanah", "Al-Hasyr", "Al-Mujadilah", "Al-Hadid", "Al-Waqi'ah", "Ar-Rahman",
-      "Al-Qamar", "An-Najm", "Ath-Thur", "Adz-Dzariyat", "Qaf", "Al-Hujurat", "Al-Fath", "Muhammad", "Al-Ahqaf", "Al-Jatsiyah",
-      "Ad-Dukhan", "Az-Zukhruf", "Asy-Syura", "Fushshilat", "Ghafir", "Az-Zumar", "Shad", "Ash-Shaffat", "Ya-Sin", "Fathir",
-      "Saba'", "Al-Ahzab", "As-Sajdah", "Luqman", "Ar-Rum", "Al-'Ankabut", "Al-Qasash", "An-Naml", "Asy-Syu'ara'", "Al-Furqan",
-      "An-Nur", "Al-Mu'minun", "Al-Hajj", "Al-Anbiya'", "Tha-Ha", "Maryam", "Al-Kahf", "Al-Isra'", "An-Nahl", "Al-Hijr",
-      "Ibrahim", "Ar-Ra'd", "Yusuf", "Hud", "Yunus", "At-Taubah", "Al-Anfal", "Al-A'raf", "Al-An'am", "Al-Ma'idah",
+      "An-Nas", "Al-Falaq", "Al-Ikhlash", "Al-Lahab", "An-Nashr",
+      "Al-Kafirun", "Al-Kautsar", "Al-Ma'un", "Quraisy", "Al-Fil",
+      "Al-Humazah", "Al-'Asr", "At-Takatsur", "Al-Qari'ah", "Al-'Adiyat",
+      "Az-Zalzalah", "Al-Bayyinah", "Al-Qadr", "Al-'Alaq", "At-Tin",
+      "Asy-Syarh", "Ad-Dhuha", "Al-Lail", "Asy-Syams", "Al-Balad",
+      "Al-Fajr", "Al-Ghasyiyah", "Al-A'la", "Ath-Thariq", "Al-Buruj",
+      "Al-Insyiqaq", "Al-Muthaffifin", "Al-Infitar", "At-Takwir", "'Abasa",
+      "An-Nazi'at", "An-Naba'", "Al-Mursalat", "Al-Insan", "Al-Qiyamah",
+      "Al-Muddatstsir", "Al-Muzzammil", "Al-Jinn", "Nuh", "Al-Ma'arij",
+      "Al-Haqqah", "Al-Qalam", "Al-Mulk", "At-Tahrim", "At-Thalaq",
+      "At-Taghabun", "Al-Munafiqun", "Al-Jumu'ah", "Ash-Shaff", "Al-Mumtahanah",
+      "Al-Hasyr", "Al-Mujadilah", "Al-Hadid", "Al-Waqi'ah", "Ar-Rahman",
+      "Al-Qamar", "An-Najm", "Ath-Thur", "Adz-Dzariyat", "Qaf",
+      "Al-Hujurat", "Al-Fath", "Muhammad", "Al-Ahqaf", "Al-Jatsiyah",
+      "Ad-Dukhan", "Az-Zukhruf", "Asy-Syura", "Fushshilat", "Ghafir",
+      "Az-Zumar", "Shad", "Ash-Shaffat", "Ya-Sin", "Fathir",
+      "Saba'", "Al-Ahzab", "As-Sajdah", "Luqman", "Ar-Rum",
+      "Al-'Ankabut", "Al-Qasash", "An-Naml", "Asy-Syu'ara'", "Al-Furqan",
+      "An-Nur", "Al-Mu'minun", "Al-Hajj", "Al-Anbiya'", "Tha-Ha",
+      "Maryam", "Al-Kahf", "Al-Isra'", "An-Nahl", "Al-Hijr",
+      "Ibrahim", "Ar-Ra'd", "Yusuf", "Hud", "Yunus",
+      "At-Taubah", "Al-Anfal", "Al-A'raf", "Al-An'am", "Al-Ma'idah",
       "An-Nisa'", "Ali 'Imran", "Al-Baqarah", "Al-Fatihah"
     ];
 
     let globalDataSantri = [];
+    let listSantriMap = {};
+    let listAntreanHariIni = [];
 
-    // Set tanggal default ke hari ini
     const todayISO = new Date().toISOString().substring(0, 10);
     document.getElementById('tanggal').value = todayISO;
     document.getElementById('absen_tanggal').value = todayISO;
 
-    // Helper untuk membersihkan & merapikan nomor HP ke format 62xxx
     function rapihkanNoHp(no) {
       if (!no) return "";
-      let cleaned = String(no).replace(/\D/g, ''); // Hapus semua karakter selain angka
+      let cleaned = String(no).replace(/\D/g, '');
       if (cleaned.startsWith('0')) {
         cleaned = '62' + cleaned.substring(1);
       }
       return cleaned;
     }
 
-    // TAB SWITCHER FUNCTION
     function switchTab(tab) {
       const tabPrestasi = document.getElementById('tabPrestasi');
       const tabAbsensi = document.getElementById('tabAbsensi');
@@ -365,17 +496,22 @@
       }
     }
 
-    // Populate Dropdown Surat
     function populateSurat() {
       const selectSurat = document.getElementById('hafalan_surat');
+      const selectEditSurat = document.getElementById('edit_hafalan_surat');
       const totalSurat = daftarSurat.length;
+
+      selectSurat.innerHTML = '<option value="">-- Pilih Surat --</option>';
+      selectEditSurat.innerHTML = '<option value="">-- Pilih Surat --</option>';
+
       daftarSurat.forEach((surat, index) => {
         const nomorSurat = totalSurat - index;
-        selectSurat.innerHTML += `<option value="${surat}">${nomorSurat}. ${surat}</option>`;
+        const opt = `<option value="${surat}">${nomorSurat}. ${surat}</option>`;
+        selectSurat.innerHTML += opt;
+        selectEditSurat.innerHTML += opt;
       });
     }
 
-    // Load Data Santri & Filter Kelas dari Supabase
     async function loadSantri() {
       try {
         const { data, error } = await db.from('santri').select('*').order('nama_santri');
@@ -383,15 +519,13 @@
 
         globalDataSantri = data;
 
-        const daftarKelas = [...new Set(globalDataSantri.map(s => s.kelas))].filter(Boolean);
-        
-        // Populate Dropdown Kelas untuk Prestasi
         const selectKelas = document.getElementById('filter_kelas');
-        selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
-
-        // Populate Dropdown Kelas untuk Absensi
         const selectKelasAbsen = document.getElementById('absen_filter_kelas');
+        selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
         selectKelasAbsen.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+
+        const daftarKelas = [...new Set(globalDataSantri.map(s => s.kelas))].filter(Boolean);
+        globalDataSantri.forEach(s => { listSantriMap[s.id_santri] = s; });
 
         daftarKelas.forEach(kelas => {
           selectKelas.innerHTML += `<option value="${kelas}">${kelas}</option>`;
@@ -403,7 +537,6 @@
       }
     }
 
-    // Sisipkan karakter hijaiyah ke posisi kursor aktif
     function insertHijaiyah(char) {
       const input = document.getElementById('ummi_materi');
       const start = input.selectionStart;
@@ -415,7 +548,6 @@
       input.focus();
     }
 
-    // Event Listener Filter Santri berdasarkan Kelas (Prestasi)
     document.getElementById('filter_kelas').addEventListener('change', (e) => {
       const kelasDipilih = e.target.value;
       const selectSantri = document.getElementById('id_santri');
@@ -435,7 +567,11 @@
       selectSantri.disabled = false;
     });
 
-    // Event Submit Form Prestasi ke Supabase & Pemicu WA
+    document.getElementById('tanggal').addEventListener('change', () => {
+      loadAntreanPrestasiHariIni();
+    });
+
+    // Simpan Prestasi Baru
     document.getElementById('formPrestasi').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
@@ -458,54 +594,209 @@
       };
 
       try {
-        // 1. Simpan data ke Supabase
-        const { data, error } = await db.from('kartu_prestasi').insert([payload]).select();
-
+        const { error } = await db.from('kartu_prestasi').insert([payload]);
         if (error) throw error;
 
-        const idBaru = data[0].id_prestasi;
-        const santriTerpilih = globalDataSantri.find(s => String(s.id_santri) === String(payload.id_santri));
-        let noHpOrtu = santriTerpilih ? rapihkanNoHp(santriTerpilih.no_hp_ortu) : "";
-        const namaSantri = santriTerpilih ? santriTerpilih.nama_santri : "Santri";
+        // Reset isian nilai tanpa mereset tanggal, pertemuan & penyimak
+        document.getElementById('id_santri').value = '';
+        document.getElementById('hafalan_surat').value = '';
+        document.getElementById('hafalan_ayat').value = '';
+        document.getElementById('hafalan_nilai').value = '';
+        document.getElementById('ummi_jilid').value = '';
+        document.getElementById('ummi_halaman').value = '';
+        document.getElementById('ummi_materi').value = '';
+        document.getElementById('ummi_nilai').value = '';
 
-        // 2. Jika nomor HP Ortu belum ada di database, tanyakan langsung via prompt
-        if (!noHpOrtu) {
-          const inputManual = prompt(`Data berhasil disimpan!\nNamun nomor HP orang tua "${namaSantri}" belum ada di database.\n\nMasukkan nomor HP WhatsApp Ortu sekarang (Contoh: 081234567890):`);
-          if (inputManual) {
-            noHpOrtu = rapihkanNoHp(inputManual);
-          }
-        }
-
-        const linkKonfirmasi = `${BASE_URL_GITHUB}/konfirmasi.html?id=${idBaru}`;
-
-        // 3. Draf pesan lengkap dengan nilai
-        const teksPesan = `Assalamu'alaikum Wr. Wb. Bapak/Ibu Wali dari *${namaSantri}*.\n\nBerikut ringkasan setoran hari ini:\n- Hafalan: ${payload.hafalan_surat || '-'} (${payload.hafalan_ayat || '-'}) | Nilai: ${payload.hafalan_nilai || '-'}\n- Ummi: ${payload.ummi_jilid || '-'} Hal. ${payload.ummi_halaman || '-'} | Nilai: ${payload.ummi_nilai || '-'}\n\nMohon disimak kembali di rumah, lalu klik link di bawah ini untuk konfirmasi:\n${linkKonfirmasi}\n\nJazakumullah khair.`;
-
-        // 4. Tanya dan Buka WA
-        if (noHpOrtu) {
-          if (confirm(`Kirimkan laporan setoran ${namaSantri} ke WhatsApp Orang Tua (${noHpOrtu}) sekarang?`)) {
-            const waUrl = `https://wa.me/${noHpOrtu}?text=${encodeURIComponent(teksPesan)}`;
-            window.location.href = waUrl;
-          }
-        } else {
-          alert("Data prestasi berhasil disimpan tanpa pengiriman laporan WhatsApp.");
-        }
-
-        document.getElementById('formPrestasi').reset();
-        document.getElementById('id_santri').disabled = true;
-        document.getElementById('tanggal').value = todayISO;
-
+        await loadAntreanPrestasiHariIni();
       } catch (err) {
-        alert("Gagal menyimpan data ke Supabase: " + err.message);
+        alert("Gagal menyimpan data prestasi: " + err.message);
       } finally {
         btn.innerText = "Simpan Data";
         btn.disabled = false;
       }
     });
 
+    // Muat Data Prestasi yang disimak_ortu === 'Pending'
+    async function loadAntreanPrestasiHariIni() {
+      const tgl = document.getElementById('tanggal').value;
+      document.getElementById('labelTglHariIni').innerText = tgl || '-';
+
+      try {
+        const { data, error } = await db
+          .from('kartu_prestasi')
+          .select('*, santri(nama_santri, kelas, no_hp_ortu)')
+          .eq('tanggal', tgl)
+          .eq('disimak_ortu', 'Pending')
+          .order('id_prestasi', { ascending: false });
+
+        if (error) throw error;
+        listAntreanHariIni = data || [];
+        renderAntreanPrestasi(listAntreanHariIni);
+      } catch (err) {
+        console.error("Gagal memuat antrean simak:", err);
+      }
+    }
+
+    function renderAntreanPrestasi(data) {
+      const mobileContainer = document.getElementById('mobileCardPrestasiContainer');
+      const tableBody = document.getElementById('tabelPrestasiBody');
+      const totalInfo = document.getElementById('totalHariIniInfo');
+
+      mobileContainer.innerHTML = '';
+      tableBody.innerHTML = '';
+      totalInfo.innerText = `Sisa ${data.length} Santri Belum Disimak Ortu`;
+
+      if (data.length === 0) {
+        const emptyState = `<div class="p-5 text-center text-slate-400 bg-slate-50 rounded-xl text-xs">✨ Tidak ada antrean setoran pending di tanggal ini (semua sudah disimak ortu).</div>`;
+        mobileContainer.innerHTML = emptyState;
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-5 text-center text-slate-400">✨ Tidak ada antrean setoran pending di tanggal ini (semua sudah disimak ortu).</td></tr>`;
+        return;
+      }
+
+      data.forEach(item => {
+        const namaSantri = item.santri ? item.santri.nama_santri : (listSantriMap[item.id_santri]?.nama_santri || 'Santri');
+        const kelasSantri = item.santri ? item.santri.kelas : (listSantriMap[item.id_santri]?.kelas || '-');
+
+        const hafalanTxt = item.hafalan_surat ? `${item.hafalan_surat} (${item.hafalan_ayat || '-'}) [${item.hafalan_nilai || '-'}]` : '-';
+        const ummiTxt = item.ummi_jilid ? `${item.ummi_jilid} Hal.${item.ummi_halaman || '-'} [${item.ummi_nilai || '-'}]` : '-';
+
+        // 1. Mobile Card
+        mobileContainer.innerHTML += `
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2 text-xs shadow-sm">
+            <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+              <div>
+                <span class="font-bold text-slate-800 text-sm">${namaSantri}</span>
+                <span class="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px] ml-1 font-medium">${kelasSantri}</span>
+              </div>
+              <span class="text-[10px] text-amber-700 font-semibold bg-amber-100 px-2 py-0.5 rounded-full">Belum Disimak</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+              <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100 text-emerald-900">
+                <span class="font-bold block text-[10px] text-emerald-700 uppercase">Hafalan:</span> ${hafalanTxt}
+              </div>
+              <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 text-blue-900">
+                <span class="font-bold block text-[10px] text-blue-700 uppercase">Ummi:</span> ${ummiTxt}
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-1 text-[11px]">
+              <span class="text-slate-400">Guru: <b>${item.disimak_guru || '-'}</b></span>
+              <div class="flex gap-1.5">
+                <button onclick="bukaModalEditPrestasi(${item.id_prestasi})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2.5 py-1 rounded-lg text-xs font-semibold">✏️ Edit</button>
+                <button onclick="kirimWaSantri(${item.id_prestasi})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 shadow-sm">
+                  <span>📲</span> Kirim WA
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // 2. Desktop Table
+        tableBody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition-all">
+            <td class="p-3">
+              <div class="font-bold text-slate-800">${namaSantri}</div>
+              <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-medium">${kelasSantri}</span>
+            </td>
+            <td class="p-3 text-emerald-700 font-medium">${hafalanTxt}</td>
+            <td class="p-3 text-blue-700 font-medium">${ummiTxt}</td>
+            <td class="p-3 text-slate-500">${item.disimak_guru || '-'}</td>
+            <td class="p-3 text-center space-x-1.5">
+              <button onclick="bukaModalEditPrestasi(${item.id_prestasi})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2.5 py-1.5 rounded-lg text-xs font-semibold">Edit</button>
+              <button onclick="kirimWaSantri(${item.id_prestasi})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">📲 Kirim WA</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Modal Edit Prestasi
+    function bukaModalEditPrestasi(id) {
+      const item = listAntreanHariIni.find(p => p.id_prestasi === id);
+      if (!item) return;
+
+      const namaSantri = item.santri ? item.santri.nama_santri : (listSantriMap[item.id_santri]?.nama_santri || 'Santri');
+
+      document.getElementById('edit_id_prestasi').value = item.id_prestasi;
+      document.getElementById('edit_nama_santri').value = namaSantri;
+      document.getElementById('edit_hafalan_surat').value = item.hafalan_surat || '';
+      document.getElementById('edit_hafalan_ayat').value = item.hafalan_ayat || '';
+      document.getElementById('edit_hafalan_nilai').value = item.hafalan_nilai || '';
+      document.getElementById('edit_ummi_jilid').value = item.ummi_jilid || '';
+      document.getElementById('edit_ummi_halaman').value = item.ummi_halaman || '';
+      document.getElementById('edit_ummi_materi').value = item.ummi_materi || '';
+      document.getElementById('edit_ummi_nilai').value = item.ummi_nilai || '';
+      document.getElementById('edit_disimak_guru').value = item.disimak_guru || 'Ustadzah Salamah';
+
+      const modal = document.getElementById('modalEditPrestasi');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function tutupModalEdit() {
+      const modal = document.getElementById('modalEditPrestasi');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('formEditPrestasi').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit_id_prestasi').value;
+
+      const payload = {
+        hafalan_surat: document.getElementById('edit_hafalan_surat').value,
+        hafalan_ayat: document.getElementById('edit_hafalan_ayat').value,
+        hafalan_nilai: document.getElementById('edit_hafalan_nilai').value,
+        ummi_jilid: document.getElementById('edit_ummi_jilid').value,
+        ummi_halaman: document.getElementById('edit_ummi_halaman').value,
+        ummi_materi: document.getElementById('edit_ummi_materi').value,
+        ummi_nilai: document.getElementById('edit_ummi_nilai').value,
+        disimak_guru: document.getElementById('edit_disimak_guru').value
+      };
+
+      try {
+        const { error } = await db.from('kartu_prestasi').update(payload).eq('id_prestasi', id);
+        if (error) throw error;
+
+        alert("Koreksi nilai berhasil disimpan!");
+        tutupModalEdit();
+        loadAntreanPrestasiHariIni();
+      } catch (err) {
+        alert("Gagal memperbarui nilai: " + err.message);
+      }
+    });
+
+    // Kirim Simak Ortu via WA Manual
+    function kirimWaSantri(id) {
+      const item = listAntreanHariIni.find(p => p.id_prestasi === id);
+      if (!item) return;
+
+      const santri = item.santri || listSantriMap[item.id_santri] || {};
+      let noHpOrtu = rapihkanNoHp(santri.no_hp_ortu);
+      const namaSantri = santri.nama_santri || "Santri";
+
+      if (!noHpOrtu) {
+        const manual = prompt(`Nomor HP Orang Tua untuk "${namaSantri}" belum ada di database.\nMasukkan nomor WhatsApp sekarang (Contoh: 081234567890):`);
+        if (manual) noHpOrtu = rapihkanNoHp(manual);
+      }
+
+      if (!noHpOrtu) {
+        alert("Pengiriman WA dibatalkan karena tidak ada nomor tujuan.");
+        return;
+      }
+
+      const ringkasanHafalan = item.hafalan_surat ? `${item.hafalan_surat} (${item.hafalan_ayat || '-'}) | Nilai: ${item.hafalan_nilai || '-'}` : '-';
+      const ringkasanUmmi = item.ummi_jilid ? `${item.ummi_jilid} Hal. ${item.ummi_halaman || '-'} | Nilai: ${item.ummi_nilai || '-'}` : '-';
+      const linkKonfirmasi = `${BASE_URL_GITHUB}/konfirmasi.html?id=${item.id_prestasi}`;
+
+      const teksPesan = `Assalamu'alaikum Wr. Wb. Bapak/Ibu Wali dari *${namaSantri}*.\n\nBerikut ringkasan setoran hari ini (${item.tanggal}):\n- Hafalan: ${ringkasanHafalan}\n- Ummi: ${ringkasanUmmi}\n- Penyimak: ${item.disimak_guru}\n\nMohon disimak kembali di rumah, lalu klik link di bawah ini untuk konfirmasi:\n${linkKonfirmasi}\n\nJazakumullah khair.`;
+
+      const waUrl = `https://wa.me/${noHpOrtu}?text=${encodeURIComponent(teksPesan)}`;
+      window.location.href = waUrl;
+    }
+
     // ================= LOGIKA ABSENSI KELAS =================
-    
-    // Render Daftar Santri per Kelas untuk Absensi
     function renderDaftarAbsenSantri() {
       const kelasDipilih = document.getElementById('absen_filter_kelas').value;
       const container = document.getElementById('containerAbsenSantri');
@@ -558,7 +849,6 @@
       btnSimpan.disabled = false;
     }
 
-    // Simpan Absensi Masal Satu Kelas
     async function simpanAbsensiMasal() {
       const kelasDipilih = document.getElementById('absen_filter_kelas').value;
       const tanggalAbsen = document.getElementById('absen_tanggal').value;
@@ -590,7 +880,6 @@
 
         alert(`Berhasil! Absensi ${payloadAbsensi.length} santri kelas ${kelasDipilih} tanggal ${tanggalAbsen} telah tersimpan.`);
         
-        // Reset pilihan kelas absensi
         document.getElementById('absen_filter_kelas').value = '';
         renderDaftarAbsenSantri();
 
@@ -601,8 +890,13 @@
       }
     }
 
-    populateSurat();
-    loadSantri();
+    async function init() {
+      populateSurat();
+      await loadSantri();
+      await loadAntreanPrestasiHariIni();
+    }
+
+    init();
   </script>
 </body>
 </html>
