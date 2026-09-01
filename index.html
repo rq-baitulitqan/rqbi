@@ -78,7 +78,7 @@
       </button>
     </div>
 
-    <!-- TAB PRESTASI -->
+    <!-- TAB PRESTASI (STRUKTUR FORM UTAMA TETAP UTUH) -->
     <div id="tabPrestasi" class="space-y-4">
       <form id="formPrestasi" class="bg-white rounded-2xl shadow-sm p-5 md:p-7 space-y-5 border border-slate-100">
         
@@ -337,9 +337,9 @@
 
   </div>
 
-  <!-- Modal Edit Prestasi -->
+  <!-- Modal Edit Prestasi (Sudah Dilengkapi Virtual Keypad Lengkap) -->
   <div id="modalEditPrestasi" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50 overflow-y-auto">
-    <div class="bg-white rounded-2xl shadow-xl p-5 md:p-6 max-w-md w-full space-y-4 my-6 border border-slate-100">
+    <div class="bg-white rounded-2xl shadow-xl p-5 md:p-6 max-w-lg w-full space-y-4 my-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 class="text-xs md:text-sm font-bold text-slate-800">✏️ Koreksi Nilai / Prestasi Santri</h3>
         <button onclick="tutupModalEdit()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
@@ -395,10 +395,63 @@
               <input type="text" id="edit_ummi_halaman" class="w-full border rounded-lg p-2 text-xs bg-white">
             </div>
           </div>
+
           <div>
-            <label class="block text-[10px] text-slate-500 mb-0.5">Materi / Pokok</label>
-            <input type="text" id="edit_ummi_materi" class="w-full border rounded-lg p-2 text-xs bg-white">
+            <label class="block text-[10px] text-slate-500 mb-0.5">Materi / Pokok & Virtual Keypad</label>
+            <input type="text" id="edit_ummi_materi" class="w-full border rounded-lg p-2 text-xs bg-white mb-2 focus:ring-2 focus:ring-emerald-500 outline-none">
+
+            <!-- Virtual Keypad di Modal Edit -->
+            <div class="bg-slate-100 p-2.5 rounded-lg border border-slate-200 space-y-2">
+              <div>
+                <span class="text-[10px] text-slate-500 font-bold block mb-1">HARAKAT:</span>
+                <div class="flex flex-wrap gap-1">
+                  <button type="button" onclick="insertHijaiyahEdit(' َ')" class="px-2 py-1 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">َ (Fathah)</button>
+                  <button type="button" onclick="insertHijaiyahEdit(' ِ')" class="px-2 py-1 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ِ (Kasrah)</button>
+                  <button type="button" onclick="insertHijaiyahEdit(' ُ')" class="px-2 py-1 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ُ (Dhammah)</button>
+                  <button type="button" onclick="insertHijaiyahEdit(' ً')" class="px-2 py-1 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ً (Tanwin)</button>
+                  <button type="button" onclick="insertHijaiyahEdit(' ْ')" class="px-2 py-1 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ْ (Sukun)</button>
+                  <button type="button" onclick="insertHijaiyahEdit(' ّ')" class="px-2 py-1 bg-white hover:bg-emerald-100 border rounded text-xs font-bold active:bg-emerald-200">ّ (Tasydid)</button>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-500 font-bold block mb-1">HURUF HIJAIYAH (30):</span>
+                <div class="flex flex-wrap gap-1 justify-start" style="direction: rtl;">
+                  <button type="button" onclick="insertHijaiyahEdit('ا')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ا</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ب')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ب</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ت')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ت</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ث')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ث</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ج')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ج</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ح')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ح</button>
+                  <button type="button" onclick="insertHijaiyahEdit('خ')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">خ</button>
+                  <button type="button" onclick="insertHijaiyahEdit('د')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">د</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ذ')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ذ</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ر')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ر</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ز')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ز</button>
+                  <button type="button" onclick="insertHijaiyahEdit('س')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">س</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ش')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ش</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ص')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ص</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ض')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ض</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ط')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ط</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ظ')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ظ</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ع')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ع</button>
+                  <button type="button" onclick="insertHijaiyahEdit('غ')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">غ</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ف')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ف</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ق')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ق</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ك')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ك</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ل')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ل</button>
+                  <button type="button" onclick="insertHijaiyahEdit('م')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">م</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ن')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ن</button>
+                  <button type="button" onclick="insertHijaiyahEdit('و')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">و</button>
+                  <button type="button" onclick="insertHijaiyahEdit('هـ')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">هـ</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ء')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ء</button>
+                  <button type="button" onclick="insertHijaiyahEdit('لا')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">لا</button>
+                  <button type="button" onclick="insertHijaiyahEdit('ي')" class="w-8 h-8 bg-white hover:bg-emerald-100 border rounded text-base font-bold shadow-sm active:bg-emerald-200">ي</button>
+                </div>
+              </div>
+            </div>
           </div>
+
           <div>
             <label class="block text-[10px] text-slate-500 mb-0.5">Nilai Ummi</label>
             <select id="edit_ummi_nilai" class="w-full border rounded-lg p-2 bg-white text-xs font-semibold">
@@ -536,8 +589,21 @@
       }
     }
 
+    // Sisip Hijaiyah untuk Form Utama
     function insertHijaiyah(char) {
       const input = document.getElementById('ummi_materi');
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const text = input.value;
+
+      input.value = text.substring(0, start) + char + text.substring(end);
+      input.selectionStart = input.selectionEnd = start + char.length;
+      input.focus();
+    }
+
+    // Sisip Hijaiyah untuk Modal Edit
+    function insertHijaiyahEdit(char) {
+      const input = document.getElementById('edit_ummi_materi');
       const start = input.selectionStart;
       const end = input.selectionEnd;
       const text = input.value;
@@ -596,7 +662,7 @@
         const { error } = await db.from('kartu_prestasi').insert([payload]);
         if (error) throw error;
 
-        // Reset isian nilai tanpa mereset tanggal, pertemuan & penyimak
+        // Reset isian nilai
         document.getElementById('id_santri').value = '';
         document.getElementById('hafalan_surat').value = '';
         document.getElementById('hafalan_ayat').value = '';
