@@ -131,15 +131,20 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nilai Hafalan</label>
-            <input type="text" id="nilai_hafalan" required placeholder="Contoh: 90 / Mumtaz" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nilai Qur'an</label>
+            <input type="text" id="nilai_hafalan" required placeholder="Cth: 90" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nilai Ujian Jilid</label>
-            <input type="text" id="nilai_jilid" required placeholder="Contoh: 88 / A" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nilai Hadits</label>
+            <input type="number" id="nilai_hadits" step="any" min="0" max="100" placeholder="Cth: 85" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nilai Jilid</label>
+            <input type="text" id="nilai_jilid" required placeholder="Cth: 88" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
         </div>
 
@@ -199,6 +204,7 @@
               <th class="p-3">Nama Ujian</th>
               <th class="p-3">Materi Hafalan</th>
               <th class="p-3">Nilai Hafalan</th>
+              <th class="p-3">Nilai Hadits</th>
               <th class="p-3">Nilai Jilid</th>
               <th class="p-3">Status</th>
               <th class="p-3">Penguji</th>
@@ -207,7 +213,7 @@
           </thead>
           <tbody id="tabelUjianBody" class="divide-y text-slate-600">
             <tr>
-              <td colspan="9" class="p-4 text-center text-slate-400">Sedang mengambil data...</td>
+              <td colspan="10" class="p-4 text-center text-slate-400">Sedang mengambil data...</td>
             </tr>
           </tbody>
         </table>
@@ -217,7 +223,7 @@
 
   </div>
 
-  <!-- Modal Edit Ujian (Disesuaikan dengan 2 Dropdown Surat) -->
+  <!-- Modal Edit Ujian (Disesuaikan dengan 2 Dropdown Surat & Nilai Hadits) -->
   <div id="modalEditUjian" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50 overflow-y-auto">
     <div class="bg-white rounded-xl shadow-lg p-5 max-w-md w-full space-y-4 my-8">
       <div class="flex justify-between items-center border-b pb-2">
@@ -273,13 +279,17 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="block font-medium text-slate-600 mb-1">Nilai Hafalan</label>
+            <label class="block font-medium text-slate-600 mb-1">Nilai Qur'an</label>
             <input type="text" id="editNilaiHafalan" required class="w-full p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
           <div>
-            <label class="block font-medium text-slate-600 mb-1">Nilai Ujian Jilid</label>
+            <label class="block font-medium text-slate-600 mb-1">Nilai Hadits</label>
+            <input type="number" id="editNilaiHadits" step="any" min="0" max="100" class="w-full p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-600 mb-1">Nilai Jilid</label>
             <input type="text" id="editNilaiJilid" required class="w-full p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
         </div>
@@ -450,12 +460,15 @@
         gabunganMateri = `${suratAwal} s/d ${suratAkhir}`;
       }
 
+      const inputHadits = document.getElementById('nilai_hadits').value;
+
       const payload = {
         id_santri: parseInt(document.getElementById('id_santri').value),
         tanggal: document.getElementById('tanggal').value,
         nama_ujian: document.getElementById('nama_ujian').value,
         materi_hafalan: gabunganMateri,
         nilai_hafalan: document.getElementById('nilai_hafalan').value,
+        nilai_hadits: inputHadits !== "" ? Number(inputHadits) : null,
         nilai_jilid: document.getElementById('nilai_jilid').value,
         keterangan: document.getElementById('keterangan').value,
         penguji: document.getElementById('penguji').value
@@ -479,7 +492,7 @@
 
         const linkLaporan = `${BASE_URL_GITHUB}/hasil_ujian.html?id=${idBaru}`;
 
-        const teksPesan = `Assalamu'alaikum Wr. Wb. Bapak/Ibu Wali dari *${namaSantri}*.\n\nUstadzah penguji telah selesai merekap Hasil Ujian Santri untuk *${payload.nama_ujian}* pada tanggal ${payload.tanggal}.\n\nUntuk melihat Rapor Digital, Rincian Nilai Hafalan & Jilid, serta Status Kelulusan ananda, silakan klik link resmi di bawah ini:\n👇🏼👇🏼👇🏼\n${linkLaporan}\n\nJazakumullah khair atas perhatian dan bimbingannya di rumah.`;
+        const teksPesan = `Assalamu'alaikum Wr. Wb. Bapak/Ibu Wali dari *${namaSantri}*.\n\nUstadzah penguji telah selesai merekap Hasil Ujian Santri untuk *${payload.nama_ujian}* pada tanggal ${payload.tanggal}.\n\nUntuk melihat Rapor Digital, Rincian Nilai Hafalan Qur'an, Nilai Hadits & Jilid, serta Status Kelulusan ananda, silakan klik link resmi di bawah ini:\n👇🏼👇🏼👇🏼\n${linkLaporan}\n\nJazakumullah khair atas perhatian dan bimbingannya di rumah.`;
 
         if (noHpOrtu) {
           if (confirm(`Kirimkan Notifikasi Laporan Ujian ${namaSantri} ke WhatsApp Orang Tua (${noHpOrtu}) sekarang?`)) {
@@ -532,7 +545,7 @@
       if (data.length === 0) {
         const emptyState = `<div class="p-6 text-center text-slate-400 bg-slate-50 rounded-xl text-xs">Belum ada riwayat hasil ujian.</div>`;
         mobileContainer.innerHTML = emptyState;
-        tableBody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">Belum ada riwayat hasil ujian.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400">Belum ada riwayat hasil ujian.</td></tr>`;
         return;
       }
 
@@ -563,7 +576,7 @@
               <div>
                 <div class="font-semibold text-emerald-700">${item.nama_ujian}</div>
                 <div class="text-[11px] text-slate-600">Materi: <b>${item.materi_hafalan || '-'}</b></div>
-                <div class="text-[11px] text-slate-500">Nilai Hafalan: <b>${item.nilai_hafalan || '-'}</b> | Nilai Jilid: <b>${item.nilai_jilid || '-'}</b></div>
+                <div class="text-[11px] text-slate-500">Qur'an: <b>${item.nilai_hafalan || '-'}</b> | Hadits: <b>${item.nilai_hadits ?? '-'}</b> | Jilid: <b>${item.nilai_jilid || '-'}</b></div>
                 <div class="text-[11px] text-slate-400">Penguji: ${item.penguji || '-'}</div>
               </div>
 
@@ -586,6 +599,7 @@
             <td class="p-3 font-semibold text-emerald-700">${item.nama_ujian}</td>
             <td class="p-3 text-slate-700">${item.materi_hafalan || '-'}</td>
             <td class="p-3 font-bold text-slate-800">${item.nilai_hafalan || '-'}</td>
+            <td class="p-3 font-bold text-emerald-700">${item.nilai_hadits ?? '-'}</td>
             <td class="p-3 font-bold text-slate-800">${item.nilai_jilid || '-'}</td>
             <td class="p-3">${badgeKet}</td>
             <td class="p-3">${item.penguji || '-'}</td>
@@ -598,7 +612,7 @@
       });
     }
 
-    // Modal Edit Ujian dengan Parser 2 Dropdown Surat
+    // Modal Edit Ujian dengan Parser 2 Dropdown Surat & Nilai Hadits
     function bukaModalEdit(id) {
       const item = listUjian.find(u => u.id_ujian === id);
       if (!item) return;
@@ -622,6 +636,7 @@
       }
 
       document.getElementById('editNilaiHafalan').value = item.nilai_hafalan || '';
+      document.getElementById('editNilaiHadits').value = item.nilai_hadits ?? '';
       document.getElementById('editNilaiJilid').value = item.nilai_jilid || '';
       document.getElementById('editKeterangan').value = item.keterangan || 'Lulus';
       document.getElementById('editPenguji').value = item.penguji || '';
@@ -650,11 +665,14 @@
         editMateri = `${editAwal} s/d ${editAkhir}`;
       }
 
+      const editHadits = document.getElementById('editNilaiHadits').value;
+
       const payload = {
         tanggal: document.getElementById('editTanggal').value,
         nama_ujian: document.getElementById('editNamaUjian').value,
         materi_hafalan: editMateri,
         nilai_hafalan: document.getElementById('editNilaiHafalan').value,
+        nilai_hadits: editHadits !== "" ? Number(editHadits) : null,
         nilai_jilid: document.getElementById('editNilaiJilid').value,
         keterangan: document.getElementById('editKeterangan').value,
         penguji: document.getElementById('editPenguji').value
