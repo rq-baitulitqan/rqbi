@@ -51,16 +51,21 @@
           <p id="materiHafalan" class="text-xs font-bold text-slate-800">-</p>
         </div>
 
-        <!-- Rincian Nilai Hafalan & Nilai Jilid -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center">
-            <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Nilai Hafalan</span>
-            <span id="nilaiHafalan" class="text-lg font-black text-emerald-700">-</span>
+        <!-- Rincian Nilai: Qur'an, Hadits, & Jilid -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block mb-1">Nilai Jilid</span>
+            <span id="nilaiJilid" class="text-base sm:text-lg font-black text-emerald-700">-</span>
           </div>
-          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-center">
-            <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Nilai Ujian Jilid</span>
-            <span id="nilaiJilid" class="text-lg font-black text-emerald-700">-</span>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block mb-1">Nilai Hafalan Surat</span>
+            <span id="nilaiHafalan" class="text-base sm:text-lg font-black text-emerald-700">-</span>
           </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase block mb-1">Nilai Hadits</span>
+            <span id="nilaiHadits" class="text-base sm:text-lg font-black text-emerald-700">-</span>
+          </div>
+
         </div>
 
         <!-- Penguji & Catatan -->
@@ -123,10 +128,11 @@
           document.getElementById('fotoSantri').src = santri.foto_url;
         }
 
-        // Render Rincian Ujian
+        // Render Rincian Ujian & Nilai
         document.getElementById('namaUjian').innerText = data.nama_ujian || 'Ujian Kenaikan';
         document.getElementById('materiHafalan').innerText = data.materi_hafalan || 'Surah Pendek';
         document.getElementById('nilaiHafalan').innerText = data.nilai_hafalan || '-';
+        document.getElementById('nilaiHadits').innerText = (data.nilai_hadits !== null && data.nilai_hadits !== undefined) ? data.nilai_hadits : '-';
         document.getElementById('nilaiJilid').innerText = data.nilai_jilid || '-';
         document.getElementById('penguji').innerText = data.penguji || '-';
 
