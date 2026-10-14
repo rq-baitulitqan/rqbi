@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jurnal Harian Pembelajaran - RQ Baitul Itqan</title>
+  
+  <script>
+    const PIN_RAHASIA = "laatahzan"; // PIN Akses Pengurus
+
+    function cekAksesPengurus() {
+      const isAuth = localStorage.getItem('rqbi_authenticated');
+      if (isAuth !== 'true') {
+        const inputPin = prompt("🔒 Halaman Terbatas!\nMasukkan PIN Pengurus / Ustadzah Rumah Qur'an Baitul Itqan:");
+        if (inputPin === PIN_RAHASIA) {
+          localStorage.setItem('rqbi_authenticated', 'true');
+        } else {
+          alert("❌ PIN Salah atau dibatalkan! Anda akan dialihkan ke Halaman Profil Lembaga.");
+          window.location.href = "tamu.html";
+        }
+      }
+    }
+
+    function logoutPengurus() {
+      if (confirm("Apakah Anda yakin ingin mengunci kembali aplikasi ini?")) {
+        localStorage.removeItem('rqbi_authenticated');
+        window.location.href = "tamu.html";
+      }
+    }
+
+    cekAksesPengurus();
+  </script>
+
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dk8fg3wgm/image/upload/v1786163785/fav_ugojic.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: white !important;
+        color: black !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 pb-16">
+
+  <!-- Navbar -->
+  <div class="no-print bg-emerald-600 text-white p-3 sticky top-0 shadow-md z-10 flex items-center justify-between px-4 md:px-8">
+    <div class="flex items-center gap-2.5">
+      <img src="https://res.cloudinary.com/dk8fg3wgm/image/upload/v1786163785/fav_ugojic.png" alt="Logo RQ Baitul Itqan" class="w-8 h-8 rounded-full bg-white p-0.5 shadow-sm">
+      <div>
+        <h1 class="text-sm sm:text-base font-bold leading-tight">Rumah Qur'an Baitul Itqan</h1>
+        <p class="text-[10px] text-emerald-100 font-medium">📋 Jurnal Pembelajaran per Kelas</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="window.print()" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-500 font-semibold flex items-center gap-1 shadow">
+        🖨️ Cetak
+      </button>
+      <button onclick="logoutPengurus()" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1.5 rounded-lg border border-emerald-500 font-semibold shadow">
+        🔒 Kunci
+      </button>
+      <a href="prestasi.html" class="text-xs bg-emerald-700 hover:bg-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-500 font-semibold shadow">
+        ← Prestasi
+      </a>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto p-4 space-y-6">
+
+    <!-- Form Input Jurnal -->
+    <div class="no-print bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 class="text-xs sm:text-sm font-bold text-emerald-800 uppercase tracking-wide flex items-center gap-1.5">
+          <span>📝</span> Form Input Jurnal Harian Kelas
+        </h2>
+        <span id="dbStatus" class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+          Memeriksa Koneksi...
+        </span>
+      </div>
+
+      <form id="formJurnal" class="space-y-4 text-xs">
+        <!-- Kelas, Tanggal, Semester, Tahun -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Pilih Kelas *</label>
+            <select id="jurnal_kelas" required class="w-full border border-slate-300 rounded-lg p-2.5 bg-slate-50 font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="">-- Memuat Kelas... --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Tanggal *</label>
+            <input type="date" id="jurnal_tanggal" required class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Semester *</label>
+            <select id="jurnal_semester" required class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+              <option value="Ganjil">Semester Ganjil</option>
+              <option value="Genap">Semester Genap</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Tahun Pelajaran *</label>
+            <input type="text" id="jurnal_tahun" value="2026/2027" required placeholder="Cth: 2026/2027" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+          </div>
+        </div>
+
+        <!-- Section Setoran Hafalan -->
+        <div class="bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-100 space-y-2">
+          <div class="font-bold text-emerald-800 flex items-center gap-1.5">
+            <span>🌿</span> Setoran Hafalan (Surat & Ayat)
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium text-slate-600 mb-1">Pilih Surat</label>
+              <select id="jurnal_hafalan_surat" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option value="">-- Pilih Surat --</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-1">Ayat</label>
+              <input type="text" id="jurnal_hafalan_ayat" placeholder="Contoh: Ayat 1 - 15" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Ummi / Al-Qur'an & Virtual Keypad -->
+        <div class="bg-blue-50/60 p-3.5 rounded-xl border border-blue-100 space-y-3">
+          <div class="font-bold text-blue-800 flex items-center gap-1.5">
+            <span>📘</span> Jilid Ummi / Al-Qur'an (Jilid, Halaman, Ayat/Materi)
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium text-slate-600 mb-1">Jilid / Tingkat</label>
+              <select id="jurnal_ummi_jilid" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option value="">-- Jilid --</option>
+                <option value="PRA TK">PRA TK</option>
+                <option value="Jilid 1">Jilid 1</option>
+                <option value="Jilid 2">Jilid 2</option>
+                <option value="Jilid 3">Jilid 3</option>
+                <option value="Jilid 4">Jilid 4</option>
+                <option value="Jilid 5">Jilid 5</option>
+                <option value="Jilid 6">Jilid 6</option>
+                <option value="Ghorib">Ghorib</option>
+                <option value="Tajwid">Tajwid</option>
+                <option value="Al Qur'an">Al Qur'an</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-1">Halaman</label>
+              <input type="text" id="jurnal_ummi_halaman" placeholder="Contoh: Hal 12 - 14" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+          </div>
+
+          <!-- Input Ayat / Materi Bahasan dengan Virtual Keypad -->
+          <div>
+            <label class="block font-medium text-slate-600 mb-1">Materi / Pokok & Virtual Keypad (Ayat / Bahasan)</label>
+            <input 
+              type="text" 
+              id="jurnal_ummi_ayat" 
+              placeholder="Ketik materi atau klik huruf/harakat di bawah" 
+              class="w-full p-2 border border-slate-300 rounded-lg bg-white mb-2 outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+            
+            <div class="bg-slate-100 p-2.5 rounded-lg border border-slate-200 space-y-2">
+              <div>
+                <span class="text-[10px] text-slate-500 font-bold block mb-1">HARAKAT:</span>
+                <div class="flex flex-wrap gap-1">
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah(' َ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-xs font-bold active:bg-emerald-200">َ (Fathah)</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah(' ِ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-xs font-bold active:bg-emerald-200">ِ (Kasrah)</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah(' ُ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-xs font-bold active:bg-emerald-200">ُ (Dhammah)</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah(' ً')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-xs font-bold active:bg-emerald-200">ً (Tanwin)</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah(' ْ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-xs font-bold active:bg-emerald-200">ْ (Sukun)</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah(' ّ')" class="px-2 py-0.5 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-xs font-bold active:bg-emerald-200">ّ (Tasydid)</button>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-500 font-bold block mb-1">HURUF HIJAIYAH (30):</span>
+                <div class="flex flex-wrap gap-1 justify-start" style="direction: rtl;">
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ا')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ا</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ب')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ب</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ت')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ت</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ث')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ث</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ج')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ج</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ح')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ح</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('خ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">خ</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('د')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">د</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ذ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ذ</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ر')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ر</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ز')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ز</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('س')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">س</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ش')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ش</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ص')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ص</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ض')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ض</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ط')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ط</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ظ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ظ</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ع')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ع</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('غ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">غ</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ف')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ف</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ق')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ق</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ك')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ك</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ل')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ل</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('م')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">م</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ن')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ن</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('و')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">و</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('هـ')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">هـ</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ء')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ء</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('لا')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">لا</button>
+                  <button type="button" onmousedown="event.preventDefault(); insertHijaiyah('ي')" class="w-7 h-7 bg-white hover:bg-emerald-100 border border-slate-200 rounded text-sm font-bold shadow-sm">ي</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ustadzah & Catatan -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Ustadzah Pengampu / Pengajar</label>
+            <select id="jurnal_pengajar" required class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="Ustadzah Salamah, S.Kom.I.">Ustadzah Salamah, S.Kom.I.</option>
+              <option value="Ustadzah Rosianah">Ustadzah Rosianah</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Catatan Pembelajaran (Opsional)</label>
+            <input type="text" id="jurnal_catatan" placeholder="Cth: Santri fokus makhraj huruf / tuntas semua" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+
+        <button type="submit" id="btnSimpan" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all text-white font-medium py-3 rounded-lg shadow mt-2">
+          💾 Simpan Jurnal Pembelajaran
+        </button>
+      </form>
+    </div>
+
+    <!-- Riwayat Jurnal -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 space-y-4">
+      
+      <!-- Kop Dokumen Cetak -->
+      <div class="hidden print:block text-center border-b-2 border-slate-800 pb-3 mb-4">
+        <h2 class="text-base font-extrabold uppercase tracking-wide">Jurnal Harian Pembelajaran Santri</h2>
+        <h3 class="text-xs font-bold text-emerald-700 uppercase">Rumah Qur'an Baitul Itqan</h3>
+        <p class="text-[10px] text-slate-500">Metode Ummi & Tahfidz Al-Qur'an</p>
+      </div>
+
+      <div class="no-print flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-800">📋 Riwayat Jurnal Harian</h3>
+          <p class="text-[11px] text-slate-500" id="infoTotalJurnal">Memuat riwayat...</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <label class="font-medium text-slate-600">Filter Kelas:</label>
+          <select id="filterLihatKelas" onchange="muatRiwayatJurnal()" class="border border-slate-300 rounded-lg p-1.5 bg-white outline-none font-medium">
+            <option value="">Semua Kelas</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto border border-slate-200 rounded-lg">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 border-b border-slate-200 font-semibold text-center">
+              <th class="p-2.5 border-r border-slate-200 w-24">Tanggal</th>
+              <th class="p-2.5 border-r border-slate-200 w-20">Kelas</th>
+              <th class="p-2.5 border-r border-slate-200 w-28">Semester / TA</th>
+              <th class="p-2.5 border-r border-slate-200 bg-emerald-50 text-emerald-800">Hafalan (Surat & Ayat)</th>
+              <th class="p-2.5 border-r border-slate-200 bg-blue-50 text-blue-800">Ummi (Jilid, Hal, Ayat/Materi)</th>
+              <th class="p-2.5 w-28">Pengajar</th>
+            </tr>
+          </thead>
+          <tbody id="tabelJurnalBody" class="divide-y divide-slate-200 text-slate-600">
+            <tr>
+              <td colspan="6" class="p-4 text-center text-slate-400">Sedang memuat riwayat jurnal...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tanda Tangan Cetak -->
+      <div class="hidden print:grid grid-cols-2 text-center text-xs pt-8">
+        <div>
+          <p class="text-slate-500">Mengetahui,</p>
+          <p class="font-bold text-slate-700 mt-0.5">Kepala Rumah Qur'an</p>
+          <div class="h-16"></div>
+          <p class="font-bold underline text-slate-800">Ustadzah Rosianah</p>
+        </div>
+        <div>
+          <p class="text-slate-500">Guru / Ustadzah Pengampu,</p>
+          <p class="font-bold text-slate-700 mt-0.5">Rumah Qur'an Baitul Itqan</p>
+          <div class="h-16"></div>
+          <p class="font-bold underline text-slate-800">Ustadzah Pengajar</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://dzgshmfgklbtpgglcbnh.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Z3NobWZna2xidHBnZ2xjYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNDUwMTQsImV4cCI6MjEwMTcyMTAxNH0.BBqqL82VDj7G-unamkgGTNoiR3Eg_xGntDM4EofWhyA";
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const daftarSurat = [
+      "An-Nas", "Al-Falaq", "Al-Ikhlash", "Al-Lahab", "An-Nashr",
+      "Al-Kafirun", "Al-Kautsar", "Al-Ma'un", "Quraisy", "Al-Fil",
+      "Al-Humazah", "Al-'Asr", "At-Takatsur", "Al-Qari'ah", "Al-'Adiyat",
+      "Az-Zalzalah", "Al-Bayyinah", "Al-Qadr", "Al-'Alaq", "At-Tin",
+      "Asy-Syarh", "Ad-Dhuha", "Al-Lail", "Asy-Syams", "Al-Balad",
+      "Al-Fajr", "Al-Ghasyiyah", "Al-A'la", "Ath-Thariq", "Al-Buruj",
+      "Al-Insyiqaq", "Al-Muthaffifin", "Al-Infitar", "At-Takwir", "'Abasa",
+      "An-Nazi'at", "An-Naba'", "Al-Mursalat", "Al-Insan", "Al-Qiyamah",
+      "Al-Muddatstsir", "Al-Muzzammil", "Al-Jinn", "Nuh", "Al-Ma'arij",
+      "Al-Haqqah", "Al-Qalam", "Al-Mulk", "At-Tahrim", "At-Thalaq",
+      "At-Taghabun", "Al-Munafiqun", "Al-Jumu'ah", "Ash-Shaff", "Al-Mumtahanah",
+      "Al-Hasyr", "Al-Mujadilah", "Al-Hadid", "Al-Waqi'ah", "Ar-Rahman",
+      "Al-Qamar", "An-Najm", "Ath-Thur", "Adz-Dzariyat", "Qaf",
+      "Al-Hujurat", "Al-Fath", "Muhammad", "Al-Ahqaf", "Al-Jatsiyah",
+      "Ad-Dukhan", "Az-Zukhruf", "Asy-Syura", "Fushshilat", "Ghafir",
+      "Az-Zumar", "Shad", "Ash-Shaffat", "Ya-Sin", "Fathir",
+      "Saba'", "Al-Ahzab", "As-Sajdah", "Luqman", "Ar-Rum",
+      "Al-'Ankabut", "Al-Qashash", "An-Naml", "Asy-Syu'ara'", "Al-Furqan",
+      "An-Nur", "Al-Mu'minun", "Al-Hajj", "Al-Anbiya'", "Tha-Ha",
+      "Maryam", "Al-Kahf", "Al-Isra'", "An-Nahl", "Al-Hijr",
+      "Ibrahim", "Ar-Ra'd", "Yusuf", "Hud", "Yunus",
+      "At-Taubah", "Al-Anfal", "Al-A'raf", "Al-An'am", "Al-Ma'idah",
+      "An-Nisa'", "Ali 'Imran", "Al-Baqarah", "Al-Fatihah"
+    ];
+
+    // Tanggal default hari ini
+    const todayISO = new Date().toISOString().substring(0, 10);
+    document.getElementById('jurnal_tanggal').value = todayISO;
+
+    // Sisipkan Harakat / Hijaiyah ke Posisi Kursor Aktif
+    function insertHijaiyah(char) {
+      const input = document.getElementById('jurnal_ummi_ayat');
+      if (!input) return;
+
+      const start = input.selectionStart !== null ? input.selectionStart : input.value.length;
+      const end = input.selectionEnd !== null ? input.selectionEnd : input.value.length;
+      const text = input.value;
+
+      input.value = text.substring(0, start) + char + text.substring(end);
+      input.selectionStart = input.selectionEnd = start + char.length;
+      input.focus();
+    }
+
+    // Dropdown 114 Surat (An-Nas di paling atas)
+    function populateSurat() {
+      const selectSurat = document.getElementById('jurnal_hafalan_surat');
+      selectSurat.innerHTML = '<option value="">-- Pilih Surat --</option>';
+      const totalSurat = daftarSurat.length;
+      daftarSurat.forEach((surat, index) => {
+        const noSurat = totalSurat - index;
+        selectSurat.innerHTML += `<option value="${surat}">${noSurat}. ${surat}</option>`;
+      });
+    }
+
+    // Ambil Data Kelas dari tabel santri
+    async function loadKelasSantri() {
+      try {
+        const { data, error } = await db.from('santri').select('kelas').order('kelas');
+        if (error) throw error;
+
+        const uniqueKelas = [...new Set((data || []).map(s => s.kelas))].filter(Boolean).sort();
+        const selectKelas = document.getElementById('jurnal_kelas');
+        const filterLihatKelas = document.getElementById('filterLihatKelas');
+
+        selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+        filterLihatKelas.innerHTML = '<option value="">Semua Kelas</option>';
+
+        uniqueKelas.forEach(k => {
+          selectKelas.innerHTML += `<option value="${k}">${k}</option>`;
+          filterLihatKelas.innerHTML += `<option value="${k}">${k}</option>`;
+        });
+
+        document.getElementById('dbStatus').className = "text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200";
+        document.getElementById('dbStatus').innerText = "● Terhubung Supabase";
+      } catch (err) {
+        console.error("Gagal memuat list kelas:", err);
+        document.getElementById('dbStatus').className = "text-[11px] font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200";
+        document.getElementById('dbStatus').innerText = "✕ Gagal Konek Database";
+        alert("Gagal memuat daftar kelas dari tabel santri: " + err.message);
+      }
+    }
+
+    // Simpan ke Supabase (tabel jurnal)
+    document.getElementById('formJurnal').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSimpan');
+      btn.innerText = "Lagi menyimpan...";
+      btn.disabled = true;
+
+      const payload = {
+        kelas: document.getElementById('jurnal_kelas').value,
+        tanggal: document.getElementById('jurnal_tanggal').value,
+        semester: document.getElementById('jurnal_semester').value,
+        tahun_pelajaran: document.getElementById('jurnal_tahun').value,
+        hafalan_surat: document.getElementById('jurnal_hafalan_surat').value,
+        hafalan_ayat: document.getElementById('jurnal_hafalan_ayat').value,
+        ummi_jilid: document.getElementById('jurnal_ummi_jilid').value,
+        ummi_halaman: document.getElementById('jurnal_ummi_halaman').value,
+        ummi_ayat: document.getElementById('jurnal_ummi_ayat').value,
+        pengajar: document.getElementById('jurnal_pengajar').value,
+        catatan: document.getElementById('jurnal_catatan').value
+      };
+
+      try {
+        const { error } = await db.from('jurnal').insert([payload]);
+        if (error) throw error;
+
+        alert("✅ Jurnal harian pembelajaran berhasil disimpan ke Supabase!");
+
+        // Kosongkan form materi agar siap input kembali
+        document.getElementById('jurnal_hafalan_surat').value = '';
+        document.getElementById('jurnal_hafalan_ayat').value = '';
+        document.getElementById('jurnal_ummi_jilid').value = '';
+        document.getElementById('jurnal_ummi_halaman').value = '';
+        document.getElementById('jurnal_ummi_ayat').value = '';
+        document.getElementById('jurnal_catatan').value = '';
+
+        await muatRiwayatJurnal();
+      } catch (err) {
+        alert("❌ Gagal menyimpan data jurnal ke Supabase:\n" + err.message + "\n\nPastikan tabel 'jurnal' sudah dibuat dan RLS sudah diaktifkan.");
+      } finally {
+        btn.innerText = "💾 Simpan Jurnal Pembelajaran";
+        btn.disabled = false;
+      }
+    });
+
+    // Ambil Riwayat dari tabel jurnal
+    async function muatRiwayatJurnal() {
+      const kelasFilter = document.getElementById('filterLihatKelas').value;
+      const tbody = document.getElementById('tabelJurnalBody');
+      const infoTotal = document.getElementById('infoTotalJurnal');
+
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data riwayat...</td></tr>`;
+
+      try {
+        let query = db.from('jurnal').select('*').order('tanggal', { ascending: false });
+
+        if (kelasFilter) {
+          query = query.eq('kelas', kelasFilter);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        const listData = data || [];
+        infoTotal.innerText = `Total: ${listData.length} Catatan Jurnal`;
+
+        if (listData.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada catatan jurnal pada filter ini.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        listData.forEach(item => {
+          const hafalanTxt = item.hafalan_surat ? `${item.hafalan_surat} (${item.hafalan_ayat || '-'})` : '-';
+          const ummiTxt = item.ummi_jilid ? `${item.ummi_jilid} Hal.${item.ummi_halaman || '-'} [${item.ummi_ayat || '-'}]` : '-';
+
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 transition-all">
+              <td class="p-2.5 border-r border-slate-200 text-center font-medium">${item.tanggal || '-'}</td>
+              <td class="p-2.5 border-r border-slate-200 text-center font-bold text-slate-700">${item.kelas || '-'}</td>
+              <td class="p-2.5 border-r border-slate-200 text-center text-[11px]">${item.semester || '-'} / ${item.tahun_pelajaran || '-'}</td>
+              <td class="p-2.5 border-r border-slate-200 text-emerald-800 font-medium">${hafalanTxt}</td>
+              <td class="p-2.5 border-r border-slate-200 text-blue-800 font-medium">${ummiTxt}</td>
+              <td class="p-2.5 text-slate-600 text-[11px] text-center">${item.pengajar || '-'}</td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error("Gagal memuat jurnal:", err);
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-500">Gagal mengambil data jurnal: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function init() {
+      populateSurat();
+      await loadKelasSantri();
+      await muatRiwayatJurnal();
+    }
+
+    init();
+  </script>
+</body>
+</html>
